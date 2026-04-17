@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Sprint-1-WebAPI")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+938c1d38e8e1a971c4ea81baf27af01d1ae9edc7")]
 [assembly: System.Reflection.AssemblyProductAttribute("Sprint-1-WebAPI")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Sprint-1-WebAPI")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
