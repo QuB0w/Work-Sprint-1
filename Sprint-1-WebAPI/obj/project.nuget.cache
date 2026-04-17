@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "ls/TuX47cXQ=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\dima1\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.6\\microsoft.aspnetcore.openapi.10.0.6.nupkg.sha512",
+    "C:\\Users\\dima1\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
