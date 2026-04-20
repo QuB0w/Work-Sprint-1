@@ -1,12 +1,12 @@
-using Event;
+using Sprint_1_WebAPI.Models;
 
 namespace Interfaces;
 
 public interface IEventService
 {
-    List<Events> GetAllEvent();
-    Events GetEventById(int id);
-    void CreateEvent(Events newEvent);
-    void UpdateEvent(int id, Events updatedEvent);
-    void DeleteEvent(int id);
+    IReadOnlyCollection<Event> GetAllEvents();
+    Event? GetEventById(Guid id);
+    Event CreateEvent(CreateEventRequest newEvent);
+    Event? UpdateEvent(Guid id, UpdateEventRequest updatedEvent);
+    bool DeleteEvent(Guid id);
 }

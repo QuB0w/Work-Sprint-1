@@ -1,59 +1,67 @@
-using Event;
 using Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Sprint_1_WebAPI.Models;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("events")]
 public class EventController(IEventService _eventService) : ControllerBase
 {
     [HttpGet]
-    public ActionResult<List<Events>> GetAllEvents()
+    public ActionResult<IReadOnlyCollection<Event>> GetAllEvents()
     {
-        return _eventService.GetAllEvent();
+        return Ok(_eventService.GetAllEvents());
     }
 
-    [HttpGet("{id}")]
-    public ActionResult<Events> GetEventById(int id)
+    [HttpGet("{id:guid}")]
+    public ActionResult<Event> GetEventById(Guid id)
     {
-        var events = _eventService.GetAllEvent().ElementAtOrDefault(id);
-        if (events == null)
+        var foundEvent = _eventService.GetEventById(id);
+        if (foundEvent is null)
         {
             return NotFound($"Event with id {id} was not found.");
         }
 
-        return events;
+        return Ok(foundEvent);
     }
 
     [HttpPost]
-    public ActionResult CreateEvent([FromBody] Events newEvent)
+    public ActionResult<Event> CreateEvent([FromBody] CreateEventRequest newEvent)
     {
-        _eventService.CreateEvent(newEvent);
-        return Created();
+        if (newEvent.StartAt >= newEvent.EndAt)
+        {
+            return BadRequest("StartAt must be earlier than EndAt.");
+        }
+
+        var createdEvent = _eventService.CreateEvent(newEvent);
+        return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
     }
 
-    [HttpPut("{id}")]
-    public ActionResult UpdateEvent(int id, [FromBody] Events updatedEvent)
+    [HttpPut("{id:guid}")]
+    public ActionResult<Event> UpdateEvent(Guid id, [FromBody] UpdateEventRequest updatedEvent)
     {
-        var events = _eventService.GetAllEvent().ElementAtOrDefault(id);
-        if (events == null)
+        if (updatedEvent.StartAt >= updatedEvent.EndAt)
+        {
+            return BadRequest("StartAt must be earlier than EndAt.");
+        }
+
+        var updated = _eventService.UpdateEvent(id, updatedEvent);
+        if (updated is null)
         {
             return NotFound($"Event with id {id} was not found.");
         }
 
-        _eventService.UpdateEvent(id, updatedEvent);
-        return Ok();
+        return Ok(updated);
     }
 
-    [HttpDelete("{id}")]
-    public ActionResult DeleteEvent(int id)
+    [HttpDelete("{id:guid}")]
+    public ActionResult DeleteEvent(Guid id)
     {
-        var events = _eventService.GetAllEvent().ElementAtOrDefault(id);
-        if (events == null)
+        var deleted = _eventService.DeleteEvent(id);
+        if (!deleted)
         {
             return NotFound($"Event with id {id} was not found.");
         }
 
-        _eventService.DeleteEvent(id);
-        return Ok();
+        return NoContent();
     }
 }

@@ -1,41 +1,69 @@
 # Sprint-1-WebAPI
 
-Краткий учебный ASP.NET Core Web API для работы с событиями (in-memory хранилище).
+Учебный ASP.NET Core Web API для работы с событиями.
 
-## Стек
+## Что реализовано
 
-- .NET 10 (`net10.0`)
+- CRUD для сущности Event
+- In-memory хранилище (без БД)
+- Swagger UI для тестирования эндпоинтов
+- Валидация входных данных для создания и обновления
+
+## Технологии
+
+- .NET 10
 - ASP.NET Core Web API
-- Swagger (OpenAPI)
+- Swagger / OpenAPI
 
-## Быстрый запуск
+## Запуск проекта
 
-1. Установите .NET SDK 10.
-2. Откройте терминал в корне проекта.
-3. Выполните команды:
+1. Перейдите в корень проекта.
+2. Выполните:
 
+```powershell
 dotnet restore
 dotnet run
+```
 
-После запуска API доступен по адресу:
+3. Откройте Swagger:
 
-- `http://localhost:5153`
+- http://localhost:5153/swagger
 
-Swagger UI:
+## API
 
-- `http://localhost:5153/swagger`
+Базовый маршрут: `/events`
 
-## Модель данных
+### GET /events
 
-`Events`:
+Возвращает список всех событий.
 
-- `id` (`Guid`) - создается на сервере
-- `title` (`string`) - обязательное
-- `description` (`string`) - опциональное
-- `startAt` (`DateTime`) - обязательное
-- `endAt` (`DateTime`) - обязательное
+- Ответ: `200 OK`
 
-Пример JSON для создания:
+Пример:
+
+```bash
+curl -X GET "http://localhost:5153/events"
+```
+
+### GET /events/{id}
+
+Возвращает событие по `Guid`.
+
+- Ответы:
+- `200 OK` - событие найдено
+- `404 Not Found` - событие не найдено
+
+Пример:
+
+```bash
+curl -X GET "http://localhost:5153/events/8b5d5b0a-06e7-4d65-ae24-2b4ad617f4ce"
+```
+
+### POST /events
+
+Создает новое событие.
+
+Тело запроса:
 
 ```json
 {
@@ -46,100 +74,78 @@ Swagger UI:
 }
 ```
 
-## API документация
+Правила валидации:
 
-Базовый маршрут: `/api/event`
+- `title` обязателен
+- `startAt` должен быть раньше `endAt`
 
-### 1) Получить все события
+Ответы:
 
-- Метод: `GET`
-- URL: `/api/event`
-- Ответ `200 OK`: массив событий
-
-Пример:
-
-```bash
-curl -X GET "http://localhost:5153/api/event"
-```
-
-### 2) Получить событие по индексу
-
-- Метод: `GET`
-- URL: `/api/event/{id}`
-- Параметр `id`: индекс элемента в списке (0, 1, 2, ...)
-- Ответы:
-- `200 OK` - событие найдено
-- `404 Not Found` - если индекс вне диапазона
+- `201 Created` - событие создано
+- `400 Bad Request` - невалидные данные
 
 Пример:
 
 ```bash
-curl -X GET "http://localhost:5153/api/event/0"
-```
-
-### 3) Создать событие
-
-- Метод: `POST`
-- URL: `/api/event`
-- Тело: JSON объекта события
-- Ответ `201 Created`
-
-Пример:
-
-```bash
-curl -X POST "http://localhost:5153/api/event" \
+curl -X POST "http://localhost:5153/events" \
   -H "Content-Type: application/json" \
   -d '{
-    "title": "Demo",
-    "description": "Проверка API",
+    "title": "Sprint Planning",
+    "description": "Планирование задач",
     "startAt": "2026-04-20T10:00:00",
     "endAt": "2026-04-20T11:00:00"
   }'
 ```
 
-### 4) Обновить событие по индексу
+### PUT /events/{id}
 
-- Метод: `PUT`
-- URL: `/api/event/{id}`
-- Параметр `id`: индекс элемента в списке
-- Тело: JSON обновленного объекта события
-- Ответы:
-- `200 OK` - обновлено
-- `404 Not Found` - если индекс не существует
+Обновляет существующее событие по `Guid`.
+
+Тело запроса:
+
+```json
+{
+  "title": "Sprint Planning Updated",
+  "description": "Обновленное описание",
+  "startAt": "2026-04-20T12:00:00",
+  "endAt": "2026-04-20T13:00:00"
+}
+```
+
+Ответы:
+
+- `200 OK` - событие обновлено
+- `400 Bad Request` - невалидные данные
+- `404 Not Found` - событие не найдено
 
 Пример:
 
 ```bash
-curl -X PUT "http://localhost:5153/api/event/0" \
+curl -X PUT "http://localhost:5153/events/8b5d5b0a-06e7-4d65-ae24-2b4ad617f4ce" \
   -H "Content-Type: application/json" \
   -d '{
-    "id": "7bcebd22-f7b8-4906-9cf1-44b3b94969e2",
-    "title": "Updated Demo",
-    "description": "Обновленные данные",
+    "title": "Sprint Planning Updated",
+    "description": "Обновленное описание",
     "startAt": "2026-04-20T12:00:00",
     "endAt": "2026-04-20T13:00:00"
   }'
 ```
 
-### 5) Удалить событие по индексу
+### DELETE /events/{id}
 
-- Метод: `DELETE`
-- URL: `/api/event/{id}`
-- Параметр `id`: индекс элемента в списке
-- Ответы:
-- `200 OK` - удалено
-- `404 Not Found` - если индекс не существует
+Удаляет событие по `Guid`.
+
+Ответы:
+
+- `204 No Content` - удалено
+- `404 Not Found` - событие не найдено
 
 Пример:
 
 ```bash
-curl -X DELETE "http://localhost:5153/api/event/0"
+curl -X DELETE "http://localhost:5153/events/8b5d5b0a-06e7-4d65-ae24-2b4ad617f4ce"
 ```
 
-## Структура проекта (основное)
+## Ограничения
 
-- `Program.cs` - настройка DI, контроллеров и Swagger
-- `Controllers/EventController.cs` - HTTP-эндпоинты
-- `Interfaces/IEventService.cs` - контракт сервиса
-- `EventService.cs` - реализация сервиса
-- `Event.cs` - модель `Events`
+- Данные хранятся в памяти процесса и теряются после перезапуска.

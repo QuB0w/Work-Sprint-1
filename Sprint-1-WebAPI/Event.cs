@@ -1,26 +1,42 @@
-namespace Event;
+using System.ComponentModel.DataAnnotations;
 
-public class Events
+namespace Sprint_1_WebAPI.Models;
+
+public class Event
 {
-    public required Guid Id {get; set;}
-    public required string Title {get; set;}
-    public string Description {get; set;}
-    public required DateTime StartAt {get; set;}
-    public required DateTime EndAt {get; set;}
+    public Guid Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public DateTime StartAt { get; set; }
+    public DateTime EndAt { get; set; }
+}
 
-    public Events(string title, string description, DateTime startAt, DateTime endAt)
-    {
-        if (string.IsNullOrEmpty(title))
-            throw new ArgumentException("Title is required");
-        if (string.IsNullOrEmpty(startAt.ToString()))
-            throw new ArgumentException("StartAt is required");
-        if (string.IsNullOrEmpty(endAt.ToString()))
-            throw new ArgumentException("EndAt is required");
+public class CreateEventRequest
+{
+    [Required]
+    [MinLength(1)]
+    public string Title { get; set; } = string.Empty;
 
-        Id = Guid.NewGuid();
-        Title = title;
-        Description = description;
-        StartAt = startAt;
-        EndAt = endAt;
-    }
+    public string? Description { get; set; }
+
+    [Required]
+    public DateTime StartAt { get; set; }
+
+    [Required]
+    public DateTime EndAt { get; set; }
+}
+
+public class UpdateEventRequest
+{
+    [Required]
+    [MinLength(1)]
+    public string Title { get; set; } = string.Empty;
+
+    public string? Description { get; set; }
+
+    [Required]
+    public DateTime StartAt { get; set; }
+
+    [Required]
+    public DateTime EndAt { get; set; }
 }
