@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj": {}
+    "c:\\Users\\dima1\\OneDrive\\Рабочий стол\\Work-Sprint-1-sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj": {}
   },
   "projects": {
-    "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj": {
+    "c:\\Users\\dima1\\OneDrive\\Рабочий стол\\Work-Sprint-1-sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj",
+        "projectUniqueName": "c:\\Users\\dima1\\OneDrive\\Рабочий стол\\Work-Sprint-1-sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj",
         "projectName": "Sprint-1-WebAPI",
-        "projectPath": "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj",
+        "projectPath": "c:\\Users\\dima1\\OneDrive\\Рабочий стол\\Work-Sprint-1-sprint-1\\Sprint-1-WebAPI\\Sprint-1-WebAPI.csproj",
         "packagesPath": "C:\\Users\\dima1\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\dima1\\Desktop\\NET\\Work-Sprint-1\\Sprint-1-WebAPI\\obj\\",
+        "outputPath": "c:\\Users\\dima1\\OneDrive\\Рабочий стол\\Work-Sprint-1-sprint-1\\Sprint-1-WebAPI\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\dima1\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -24,6 +24,7 @@
         },
         "frameworks": {
           "net10.0": {
+            "framework": "net10.0",
             "targetAlias": "net10.0",
             "projectReferences": {}
           }
@@ -38,15 +39,20 @@
           "auditLevel": "low",
           "auditMode": "all"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net10.0": {
+          "framework": "net10.0",
           "targetAlias": "net10.0",
           "dependencies": {
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[10.0.6, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[10.1.7, )"
             }
           },
           "imports": [
@@ -68,7 +74,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.202/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.AspNetCore": "(,10.0.32767]",
             "Microsoft.AspNetCore.Antiforgery": "(,10.0.32767]",
