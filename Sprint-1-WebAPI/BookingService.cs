@@ -21,13 +21,7 @@ public class BookingService : IBookingService
             return Task.FromResult<BookingInfo?>(null);
         }
 
-        var booking = new Booking
-        {
-            Id = Guid.NewGuid(),
-            EventId = eventId,
-            Status = BookingStatus.Pending,
-            CreatedAt = DateTime.UtcNow
-        };
+        var booking = Booking.CreatePending(eventId);
 
         _bookingStore.Add(booking);
         return Task.FromResult<BookingInfo?>(MapToBookingInfo(booking));
@@ -52,8 +46,7 @@ public class BookingService : IBookingService
             throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
         }
 
-        booking.Status = BookingStatus.Confirmed;
-        booking.ProcessedAt = DateTime.UtcNow;
+        booking.Confirm();
         _bookingStore.Update(booking);
 
         return Task.CompletedTask;
@@ -67,8 +60,7 @@ public class BookingService : IBookingService
             throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
         }
 
-        booking.Status = BookingStatus.Rejected;
-        booking.ProcessedAt = DateTime.UtcNow;
+        booking.Reject();
         _bookingStore.Update(booking);
 
         return Task.CompletedTask;

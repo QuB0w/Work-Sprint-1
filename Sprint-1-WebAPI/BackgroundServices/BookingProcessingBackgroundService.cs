@@ -55,8 +55,7 @@ public class BookingProcessingBackgroundService : BackgroundService
 
             await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
 
-            booking.Status = BookingStatus.Confirmed;
-            booking.ProcessedAt = DateTime.UtcNow;
+            booking.Confirm();
             bookingStore.Update(booking);
 
             _logger.LogInformation(
