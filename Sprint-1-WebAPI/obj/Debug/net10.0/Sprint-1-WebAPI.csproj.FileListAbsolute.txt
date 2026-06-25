@@ -1,0 +1,72 @@
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/appsettings.Development.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/appsettings.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.staticwebassets.endpoints.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.exe
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.deps.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.runtimeconfig.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.pdb
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Microsoft.AspNetCore.OpenApi.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Microsoft.OpenApi.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.Swagger.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.csproj.AssemblyReference.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/rpswa.dswa.cache.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.GeneratedMSBuildEditorConfig.editorconfig
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.AssemblyInfoInputs.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.AssemblyInfo.cs
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.csproj.CoreCompileInputs.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.MvcApplicationPartsAssemblyInfo.cs
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.MvcApplicationPartsAssemblyInfo.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/rjimswa.dswa.cache.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/rjsmrazor.dswa.cache.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/scopedcss/bundle/Sprint-1-WebAPI.styles.css
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.json.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.development.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.endpoints.json
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/swae.build.ex.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1.45205A3D.Up2Date
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/refint/Sprint-1-WebAPI.dll
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.pdb
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.genruntimeconfig.cache
+c:/Users/dima1/OneDrive/Рабочий стол/Work-Sprint-1-sprint-1/Sprint-1-WebAPI/obj/Debug/net10.0/ref/Sprint-1-WebAPI.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/appsettings.Development.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/appsettings.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.staticwebassets.endpoints.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.deps.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.runtimeconfig.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Sprint-1-WebAPI.pdb
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Microsoft.AspNetCore.OpenApi.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Microsoft.OpenApi.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.Swagger.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerGen.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/bin/Debug/net10.0/Swashbuckle.AspNetCore.SwaggerUI.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.csproj.AssemblyReference.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/rpswa.dswa.cache.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.GeneratedMSBuildEditorConfig.editorconfig
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.AssemblyInfoInputs.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.AssemblyInfo.cs
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.csproj.CoreCompileInputs.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.MvcApplicationPartsAssemblyInfo.cs
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.MvcApplicationPartsAssemblyInfo.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/rjimswa.dswa.cache.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/rjsmrazor.dswa.cache.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/rjsmcshtml.dswa.cache.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/scopedcss/bundle/Sprint-1-WebAPI.styles.css
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.json.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.development.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/staticwebassets.build.endpoints.json
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/swae.build.ex.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1.45205A3D.Up2Date
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/refint/Sprint-1-WebAPI.dll
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.pdb
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/Sprint-1-WebAPI.genruntimeconfig.cache
+/Users/qub0w/Documents/Work-Sprint-1-sprint-2-new/Sprint-1-WebAPI/obj/Debug/net10.0/ref/Sprint-1-WebAPI.dll
