@@ -227,6 +227,10 @@ POST /events/{id}/book
 - Создание нескольких броней с уникальными идентификаторами
 - Получение брони по ID
 - Отражение изменения статуса брони после подтверждения/отклонения
+- Создание брони в статусе `Pending`
+- Подтверждение и отклонение брони с заполнением `ProcessedAt`
+- Уникальность идентификаторов броней
+- Хранение и обновление броней в `InMemoryBookingStore`
 
 ### Неуспешные сценарии
 - Получение несуществующих мероприятий
@@ -235,6 +239,7 @@ POST /events/{id}/book
 - Ошибки валидации дат
 - Создание брони для несуществующего или удалённого мероприятия
 - Получение брони по несуществующему ID
+- Получение брони по несуществующему ID из хранилища
 
 ### Структура тестов
 
@@ -280,8 +285,10 @@ Sprint-1-WebAPI/
 └── Sprint-1-WebAPI.csproj
 
 EventService.Tests/
+├── BookingEntityTests.cs
 ├── BookingServiceTests.cs
 ├── EventServiceTests.cs
+├── InMemoryBookingStoreTests.cs
 └── EventService.Tests.csproj
 ```
 
@@ -332,6 +339,7 @@ EventService.Tests/
 **Сущность бронирования**
 - Добавлена модель `Booking` с полями `Id`, `EventId`, `Status`, `CreatedAt`, `ProcessedAt`
 - Добавлено перечисление `BookingStatus` со значениями `Pending`, `Confirmed`, `Rejected`
+- Добавлены доменные методы: `CreatePending`, `Confirm`, `Reject`
 - Данные о бронированиях хранятся в памяти приложения в `InMemoryBookingStore`
 
 **Сервис бронирований**
@@ -352,9 +360,9 @@ EventService.Tests/
 - Корректная обработка отмены через `CancellationToken`
 
 **Юнит-тестирование**
-- Добавлен `BookingServiceTests.cs` с покрытием успешных и неуспешных сценариев
-- Проверяется создание брони, получение по ID, уникальность идентификаторов, изменение статуса
-- Все тесты проходят успешно: `dotnet test`
+- Добавлены `BookingServiceTests.cs`, `BookingEntityTests.cs`, `InMemoryBookingStoreTests.cs`
+- Покрытие: создание брони, получение по ID, уникальность идентификаторов, изменение статуса, сущность `Booking`, хранилище `InMemoryBookingStore`
+- Все тесты проходят успешно: `✅ 32 passed, 0 failed`
 
 **Документация**
 - Swagger корректно отображает новые эндпоинты
