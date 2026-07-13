@@ -396,6 +396,69 @@ GET /bookings/{bookingId}
 GET /bookings/{bookingId}
 ```
 
+## Новые возможности в Sprint 4
+
+### ✅ Реализованные функции
+
+**Ограничение мест на событие**
+- В модель `Event` добавлены поля `TotalSeats` (общее количество мест) и `AvailableSeats` (доступные места)
+- `AvailableSeats` при создании устанавливается равным `TotalSeats`
+- При создании события `TotalSeats` обязательно и должно быть > 0; нарушение возвращает `400 Bad Request`
+- Метод `TryReserveSeats()` — атомарная проверка и уменьшение `AvailableSeats`; возвращает `false` если мест нет
+- Метод `ReleaseSeats()` — освобождение мест при отклонении брони
+
+**Защита от овербукинга (lock в BookingService)**
+- В `BookingService.CreateBookingAsync` добавлена защита критической секции через `lock (_bookingLock)`
+- Критическая секция атомарно включает: получение события → проверку мест (`TryReserveSeats`) → сохранение события → создание брони
+- При отсутствии свободных мест выбрасывается `NoAvailableSeatsException`
+- `POST /events/{id}/book` возвращает `409 Conflict` при нехватке мест
+
+**Параллельная обработка в BackgroundService**
+- `BookingProcessingBackgroundService` теперь обрабатывает все `Pending`-брони параллельно через `Task.WhenAll`
+- Искусственная задержка (`ProcessingDelay = 2s`) выполняется параллельно до захвата семафора
+- `SemaphoreSlim(1, 1)` защищает запись в хранилище (асинхронный аналог `lock`, необходим для использования с `await`)
+- Если событие удалено к моменту обработки — бронь переводится в `Rejected` с логом `Warning`
+- При непредвиденной ошибке: бронь отклоняется, место возвращается через `ReleaseSeats()`
+- Константы `PollingInterval` и `ProcessingDelay` вынесены в именованные поля
+
+**Примитивы синхронизации**
+| Примитив | Где используется | Зачем |
+|----------|-----------------|-------|
+| `lock` | `BookingService.CreateBookingAsync` | Атомарная пара «проверка мест + создание брони» в синхронном коде |
+| `SemaphoreSlim` | `BookingProcessingBackgroundService` | Потокобезопасная запись в хранилище с поддержкой `await` внутри блока |
+
+**Юнит-тестирование**
+- Новые тесты на логику мест: уменьшение `AvailableSeats`, лимит броней, `NoAvailableSeatsException`
+- Тест на восстановление места после `Reject + ReleaseSeats`
+- Тест на конкурентность: 20 параллельных запросов при лимите 5 мест → ровно 5 успешных, 15 `NoAvailableSeatsException`, `AvailableSeats = 0`
+- Тест на уникальность Id при 10 конкурентных запросах
+- Все тесты используют реальный параллелизм (`Task.Run + Task.WhenAll`)
+- **Итого: `✅ 38 пройдено, 0 неудачно`**
+
+### Пример сценария с овербукингом
+
+```bash
+# 1. Создайте событие на 3 места
+POST /events
+{
+  "title": "Meetup",
+  "startAt": "2026-09-01T18:00:00Z",
+  "endAt": "2026-09-01T20:00:00Z",
+  "totalSeats": 3
+}
+
+# 2. Создайте 3 брони — все получат 202 Accepted
+POST /events/{eventId}/book   # 202 Accepted
+POST /events/{eventId}/book   # 202 Accepted
+POST /events/{eventId}/book   # 202 Accepted
+
+# 3. Четвёртая бронь — 409 Conflict
+POST /events/{eventId}/book   # 409 Conflict: No available seats for this event.
+
+# 4. Через 5–7 секунд брони переходят в Confirmed
+GET /bookings/{bookingId}     # { "status": "Confirmed", "processedAt": "..." }
+```
+
 ## Лицензия
 
 Этот проект создан в учебных целях в рамках спринт-задания.
