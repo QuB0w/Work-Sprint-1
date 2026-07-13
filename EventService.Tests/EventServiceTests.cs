@@ -29,7 +29,8 @@ public class EventServiceTests
             Title = "Test Event",
             Description = "Test Description",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(2)
+            EndAt = DateTime.Now.AddHours(2),
+            TotalSeats = 1
         };
 
         // Act
@@ -53,14 +54,16 @@ public class EventServiceTests
         {
             Title = "Event 1",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         var event2 = _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Event 2",
             StartAt = DateTime.Now.AddHours(2),
-            EndAt = DateTime.Now.AddHours(3)
+            EndAt = DateTime.Now.AddHours(3),
+            TotalSeats = 1
         });
 
         // Act
@@ -81,7 +84,8 @@ public class EventServiceTests
         {
             Title = "Test Event",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         // Act
@@ -114,7 +118,8 @@ public class EventServiceTests
         {
             Title = "Original Title",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         var updateRequest = new UpdateEventRequest
@@ -165,7 +170,8 @@ public class EventServiceTests
         {
             Title = "Test Event",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         // Act
@@ -197,14 +203,16 @@ public class EventServiceTests
         {
             Title = "Conference 2024",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Workshop",
             StartAt = DateTime.Now.AddHours(2),
-            EndAt = DateTime.Now.AddHours(3)
+            EndAt = DateTime.Now.AddHours(3),
+            TotalSeats = 1
         });
 
         // Act
@@ -225,21 +233,24 @@ public class EventServiceTests
         {
             Title = "Early Event",
             StartAt = baseDate.AddDays(-1),
-            EndAt = baseDate.AddDays(-1).AddHours(1)
+            EndAt = baseDate.AddDays(-1).AddHours(1),
+            TotalSeats = 1
         });
 
         _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Today Event",
             StartAt = baseDate,
-            EndAt = baseDate.AddHours(1)
+            EndAt = baseDate.AddHours(1),
+            TotalSeats = 1
         });
 
         _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Future Event",
             StartAt = baseDate.AddDays(1),
-            EndAt = baseDate.AddDays(1).AddHours(1)
+            EndAt = baseDate.AddDays(1).AddHours(1),
+            TotalSeats = 1
         });
 
         // Act
@@ -261,7 +272,8 @@ public class EventServiceTests
             {
                 Title = $"Event {i}",
                 StartAt = DateTime.Now.AddHours(i),
-                EndAt = DateTime.Now.AddHours(i + 1)
+                EndAt = DateTime.Now.AddHours(i + 1),
+                TotalSeats = 1
             });
         }
 
@@ -288,21 +300,24 @@ public class EventServiceTests
         {
             Title = "Tech Conference",
             StartAt = baseDate,
-            EndAt = baseDate.AddHours(2)
+            EndAt = baseDate.AddHours(2),
+            TotalSeats = 1
         });
 
         _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Business Meeting",
             StartAt = baseDate,
-            EndAt = baseDate.AddHours(1)
+            EndAt = baseDate.AddHours(1),
+            TotalSeats = 1
         });
 
         _eventService.CreateEvent(new CreateEventRequest
         {
             Title = "Tech Workshop",
             StartAt = baseDate.AddDays(1),
-            EndAt = baseDate.AddDays(1).AddHours(1)
+            EndAt = baseDate.AddDays(1).AddHours(1),
+            TotalSeats = 1
         });
 
         // Act
@@ -322,7 +337,8 @@ public class EventServiceTests
         {
             Title = "Invalid Event",
             StartAt = DateTime.Now.AddHours(1),
-            EndAt = DateTime.Now
+            EndAt = DateTime.Now,
+            TotalSeats = 1
         };
 
         // Act
@@ -343,7 +359,8 @@ public class EventServiceTests
         {
             Title = "Original Event",
             StartAt = DateTime.Now,
-            EndAt = DateTime.Now.AddHours(1)
+            EndAt = DateTime.Now.AddHours(1),
+            TotalSeats = 1
         });
 
         var updateRequest = new UpdateEventRequest
