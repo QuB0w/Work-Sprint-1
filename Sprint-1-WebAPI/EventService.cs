@@ -1,21 +1,21 @@
-using System.Collections.Concurrent;
 using Interfaces;
+using Sprint_1_WebAPI.DataAccess;
 using Sprint_1_WebAPI.Models;
 
 public class EventService : IEventService
 {
-    private static readonly ConcurrentDictionary<Guid, Event> Events = new();
+    private static readonly Sprint_1_WebAPI.DataAccess.InMemoryEventStore Store = new();
 
     public IReadOnlyCollection<Event> GetAllEvents()
     {
-        return Events.Values
+        return InMemoryEventStore.Events.Values
             .OrderBy(item => item.StartAt)
             .ToList();
     }
 
     public PaginatedResult<Event> GetEventsFiltered(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10)
     {
-        var query = Events.Values.AsQueryable();
+        var query = InMemoryEventStore.Events.Values.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(title))
         {
@@ -50,12 +50,17 @@ public class EventService : IEventService
 
     public Event? GetEventById(Guid id)
     {
-        Events.TryGetValue(id, out var foundEvent);
+        InMemoryEventStore.Events.TryGetValue(id, out var foundEvent);
         return foundEvent;
     }
 
     public Event CreateEvent(CreateEventRequest newEvent)
     {
+        if (newEvent.TotalSeats <= 0)
+        {
+            throw new ArgumentException("TotalSeats must be greater than zero.");
+        }
+
         var createdEvent = new Event
         {
             Id = Guid.NewGuid(),
@@ -63,15 +68,17 @@ public class EventService : IEventService
             Description = newEvent.Description,
             StartAt = newEvent.StartAt,
             EndAt = newEvent.EndAt,
+            TotalSeats = newEvent.TotalSeats,
+            AvailableSeats = newEvent.TotalSeats,
         };
 
-        Events[createdEvent.Id] = createdEvent;
+        InMemoryEventStore.Events[createdEvent.Id] = createdEvent;
         return createdEvent;
     }
 
     public Event? UpdateEvent(Guid id, UpdateEventRequest updatedEvent)
     {
-        if (!Events.TryGetValue(id, out var existingEvent))
+        if (!InMemoryEventStore.Events.TryGetValue(id, out var existingEvent))
         {
             return null;
         }
@@ -83,19 +90,21 @@ public class EventService : IEventService
             Description = updatedEvent.Description,
             StartAt = updatedEvent.StartAt,
             EndAt = updatedEvent.EndAt,
+            TotalSeats = existingEvent.TotalSeats,
+            AvailableSeats = existingEvent.AvailableSeats,
         };
 
-        Events[id] = newState;
+        InMemoryEventStore.Events[id] = newState;
         return newState;
     }
 
     public bool DeleteEvent(Guid id)
     {
-        return Events.TryRemove(id, out _);
+        return InMemoryEventStore.Events.TryRemove(id, out _);
     }
 
     public void ClearAllEvents()
     {
-        Events.Clear();
+        InMemoryEventStore.Events.Clear();
     }
 }
