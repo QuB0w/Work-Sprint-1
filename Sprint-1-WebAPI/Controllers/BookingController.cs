@@ -1,11 +1,15 @@
 using Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using Sprint_1_WebAPI.Exceptions;
 using Sprint_1_WebAPI.Models;
 
 [ApiController]
 public class BookingController(IBookingService _bookingService) : ControllerBase
 {
     [HttpPost("events/{id:guid}/book")]
+    [ProducesResponseType(typeof(BookingInfo), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<BookingInfo>> CreateBooking(Guid id)
     {
         var booking = await _bookingService.CreateBookingAsync(id);
@@ -21,6 +25,8 @@ public class BookingController(IBookingService _bookingService) : ControllerBase
     }
 
     [HttpGet("bookings/{id:guid}")]
+    [ProducesResponseType(typeof(BookingInfo), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<BookingInfo>> GetBookingById(Guid id)
     {
         var booking = await _bookingService.GetBookingByIdAsync(id);

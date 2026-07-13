@@ -1,5 +1,6 @@
 using System.Net;
 using System.Text.Json;
+using Sprint_1_WebAPI.Exceptions;
 
 public class GlobalExceptionHandlingMiddleware
 {
@@ -37,6 +38,10 @@ public class GlobalExceptionHandlingMiddleware
 
         switch (exception)
         {
+            case NoAvailableSeatsException noSeatsEx:
+                response.StatusCode = (int)HttpStatusCode.Conflict;
+                response.Message = noSeatsEx.Message;
+                break;
             case ArgumentException argEx:
                 response.StatusCode = (int)HttpStatusCode.BadRequest;
                 response.Message = argEx.Message;

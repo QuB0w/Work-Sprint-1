@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddSingleton<IBookingStore, InMemoryBookingStore>();
+builder.Services.AddSingleton<IEventStore, InMemoryEventStore>();
 builder.Services.AddScoped<IEventService, EventService>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddHostedService<BookingProcessingBackgroundService>();
