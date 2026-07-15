@@ -16,7 +16,9 @@
 
 - .NET 10
 - ASP.NET Core Web API
-- xUnit для тестирования
+- Entity Framework Core 9
+- PostgreSQL через Npgsql.EntityFrameworkCore.PostgreSQL
+- xUnit и EF Core InMemory для тестирования
 - Swagger/OpenAPI для документации
 
 ## Начало работы
@@ -24,7 +26,20 @@
 ### Предварительные требования
 
 - .NET 10 SDK
+- Docker Desktop (для PostgreSQL)
 - Visual Studio 2022 или VS Code
+
+### Настройка PostgreSQL
+
+1. Запустите PostgreSQL из корня репозитория:
+   ```bash
+   docker compose up -d
+   ```
+2. По умолчанию приложение использует строку подключения из `Sprint-1-WebAPI/appsettings.json`:
+   ```json
+   "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres"
+   ```
+3. При первом запуске `AppDbContext` вызывает `Database.EnsureCreated()`, который создаёт таблицы `events` и `bookings` автоматически.
 
 ### Запуск приложения
 
@@ -458,6 +473,18 @@ POST /events/{eventId}/book   # 409 Conflict: No available seats for this event.
 # 4. Через 5–7 секунд брони переходят в Confirmed
 GET /bookings/{bookingId}     # { "status": "Confirmed", "processedAt": "..." }
 ```
+
+## Новые возможности в Sprint 5
+
+### ✅ PostgreSQL и Entity Framework Core
+
+- In-memory хранилища заменены на PostgreSQL через Entity Framework Core.
+- Добавлен `AppDbContext` с `DbSet<Event>` и `DbSet<Booking>`.
+- Fluent API-конфигурации `EventConfiguration` и `BookingConfiguration` задают таблицы, ключи, обязательные поля, ограничения длины, связь один-ко-многим и строковое хранение `BookingStatus`.
+- `EventService` и `BookingService` используют scoped `AppDbContext` и сохраняют изменения через `SaveChangesAsync()`.
+- Для конкурентного бронирования используется статический `SemaphoreSlim`, поскольку scoped DbContext требует асинхронных вызовов внутри критической секции.
+- Фоновый сервис получает DbContext только через `IServiceScopeFactory`: отдельный scope для выборки идентификаторов и отдельный scope на каждую обрабатываемую бронь.
+- Тесты используют `Microsoft.EntityFrameworkCore.InMemory`; имя базы создаётся один раз на тестовый класс и используется всеми scope этого класса.
 
 ## Лицензия
 

@@ -1,32 +1,24 @@
 using Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Sprint_1_WebAPI.DataAccess;
 using Sprint_1_WebAPI.Exceptions;
 using Sprint_1_WebAPI.Models;
 
-public class BookingService : IBookingService
+public class BookingService(AppDbContext context) : IBookingService
 {
-    private readonly IEventService _eventService;
-    private readonly IBookingStore _bookingStore;
-    private readonly IEventStore _eventStore;
-    private readonly object _bookingLock = new();
+    private static readonly SemaphoreSlim BookingSemaphore = new(1, 1);
 
-    public BookingService(IEventService eventService, IBookingStore bookingStore, IEventStore eventStore)
+    private readonly AppDbContext _context = context;
+
+    public async Task<BookingInfo?> CreateBookingAsync(Guid eventId)
     {
-        _eventService = eventService;
-        _bookingStore = bookingStore;
-        _eventStore = eventStore;
-    }
-
-    public Task<BookingInfo?> CreateBookingAsync(Guid eventId)
-    {
-        Booking booking;
-
-        lock (_bookingLock)
+        await BookingSemaphore.WaitAsync();
+        try
         {
-            var eventItem = _eventService.GetEventById(eventId);
+            var eventItem = await _context.Events.FirstOrDefaultAsync(eventItem => eventItem.Id == eventId);
             if (eventItem is null)
             {
-                return Task.FromResult<BookingInfo?>(null);
+                return null;
             }
 
             if (!eventItem.TryReserveSeats())
@@ -34,57 +26,49 @@ public class BookingService : IBookingService
                 throw new NoAvailableSeatsException();
             }
 
-            _eventStore.Update(eventItem);
+            var booking = Booking.CreatePending(eventId);
+            _context.Bookings.Add(booking);
+            await _context.SaveChangesAsync();
 
-            booking = Booking.CreatePending(eventId);
-            _bookingStore.Add(booking);
+            return MapToBookingInfo(booking);
         }
-
-        return Task.FromResult<BookingInfo?>(MapToBookingInfo(booking));
+        finally
+        {
+            BookingSemaphore.Release();
+        }
     }
 
-    public Task<BookingInfo?> GetBookingByIdAsync(Guid bookingId)
+    public async Task<BookingInfo?> GetBookingByIdAsync(Guid bookingId)
     {
-        var booking = _bookingStore.GetById(bookingId);
-        if (booking is null)
-        {
-            return Task.FromResult<BookingInfo?>(null);
-        }
+        var booking = await _context.Bookings
+            .AsNoTracking()
+            .FirstOrDefaultAsync(booking => booking.Id == bookingId);
 
-        return Task.FromResult<BookingInfo?>(MapToBookingInfo(booking));
+        return booking is null ? null : MapToBookingInfo(booking);
     }
 
-    public Task ConfirmBookingAsync(Guid bookingId)
+    public async Task ConfirmBookingAsync(Guid bookingId)
     {
-        var booking = _bookingStore.GetById(bookingId);
-        if (booking is null)
-        {
-            throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
-        }
+        var booking = await _context.Bookings.FindAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
 
         booking.Confirm();
-        _bookingStore.Update(booking);
-
-        return Task.CompletedTask;
+        await _context.SaveChangesAsync();
     }
 
-    public Task RejectBookingAsync(Guid bookingId)
+    public async Task RejectBookingAsync(Guid bookingId)
     {
-        var booking = _bookingStore.GetById(bookingId);
-        if (booking is null)
-        {
-            throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
-        }
+        var booking = await _context.Bookings.FindAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
 
         booking.Reject();
-        _bookingStore.Update(booking);
-
-        return Task.CompletedTask;
+        await _context.SaveChangesAsync();
     }
 
-    public void ClearAllBookings()
+    public async Task ClearAllBookingsAsync()
     {
-        _bookingStore.ClearAll();
+        _context.Bookings.RemoveRange(_context.Bookings);
+        await _context.SaveChangesAsync();
     }
 
     private static BookingInfo MapToBookingInfo(Booking booking)

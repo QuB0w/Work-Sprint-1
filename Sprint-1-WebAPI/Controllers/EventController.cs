@@ -7,7 +7,7 @@ using Sprint_1_WebAPI.Models;
 public class EventController(IEventService _eventService) : ControllerBase
 {
     [HttpGet]
-    public ActionResult<PaginatedResult<Event>> GetAllEvents(
+    public async Task<ActionResult<PaginatedResult<Event>>> GetAllEvents(
         [FromQuery] string? title = null,
         [FromQuery] DateTime? from = null,
         [FromQuery] DateTime? to = null,
@@ -24,14 +24,14 @@ public class EventController(IEventService _eventService) : ControllerBase
             return BadRequest("PageSize must be between 1 and 100.");
         }
 
-        var result = _eventService.GetEventsFiltered(title, from, to, page, pageSize);
+        var result = await _eventService.GetEventsFilteredAsync(title, from, to, page, pageSize);
         return Ok(result);
     }
 
     [HttpGet("{id:guid}")]
-    public ActionResult<Event> GetEventById(Guid id)
+    public async Task<ActionResult<Event>> GetEventById(Guid id)
     {
-        var foundEvent = _eventService.GetEventById(id);
+        var foundEvent = await _eventService.GetEventByIdAsync(id);
         if (foundEvent is null)
         {
             return NotFound($"Event with id {id} was not found.");
@@ -41,26 +41,26 @@ public class EventController(IEventService _eventService) : ControllerBase
     }
 
     [HttpPost]
-    public ActionResult<Event> CreateEvent([FromBody] CreateEventRequest newEvent)
+    public async Task<ActionResult<Event>> CreateEvent([FromBody] CreateEventRequest newEvent)
     {
         if (newEvent.StartAt >= newEvent.EndAt)
         {
             return BadRequest("StartAt must be earlier than EndAt.");
         }
 
-        var createdEvent = _eventService.CreateEvent(newEvent);
+        var createdEvent = await _eventService.CreateEventAsync(newEvent);
         return CreatedAtAction(nameof(GetEventById), new { id = createdEvent.Id }, createdEvent);
     }
 
     [HttpPut("{id:guid}")]
-    public ActionResult<Event> UpdateEvent(Guid id, [FromBody] UpdateEventRequest updatedEvent)
+    public async Task<ActionResult<Event>> UpdateEvent(Guid id, [FromBody] UpdateEventRequest updatedEvent)
     {
         if (updatedEvent.StartAt >= updatedEvent.EndAt)
         {
             return BadRequest("StartAt must be earlier than EndAt.");
         }
 
-        var updated = _eventService.UpdateEvent(id, updatedEvent);
+        var updated = await _eventService.UpdateEventAsync(id, updatedEvent);
         if (updated is null)
         {
             return NotFound($"Event with id {id} was not found.");
@@ -70,9 +70,9 @@ public class EventController(IEventService _eventService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
-    public ActionResult DeleteEvent(Guid id)
+    public async Task<ActionResult> DeleteEvent(Guid id)
     {
-        var deleted = _eventService.DeleteEvent(id);
+        var deleted = await _eventService.DeleteEventAsync(id);
         if (!deleted)
         {
             return NotFound($"Event with id {id} was not found.");

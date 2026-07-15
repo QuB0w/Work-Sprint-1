@@ -8,5 +8,5 @@ public interface IBookingService
     Task<BookingInfo?> GetBookingByIdAsync(Guid bookingId);
     Task ConfirmBookingAsync(Guid bookingId);
     Task RejectBookingAsync(Guid bookingId);
-    void ClearAllBookings();
+    Task ClearAllBookingsAsync();
 }

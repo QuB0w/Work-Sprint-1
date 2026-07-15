@@ -1,43 +1,51 @@
 using Interfaces;
+using Microsoft.EntityFrameworkCore;
 using Sprint_1_WebAPI.DataAccess;
 using Sprint_1_WebAPI.Models;
 
-public class EventService : IEventService
+public class EventService(AppDbContext context) : IEventService
 {
-    private static readonly Sprint_1_WebAPI.DataAccess.InMemoryEventStore Store = new();
+    private readonly AppDbContext _context = context;
 
-    public IReadOnlyCollection<Event> GetAllEvents()
+    public async Task<IReadOnlyCollection<Event>> GetAllEventsAsync()
     {
-        return InMemoryEventStore.Events.Values
-            .OrderBy(item => item.StartAt)
-            .ToList();
+        return await _context.Events
+            .AsNoTracking()
+            .OrderBy(eventItem => eventItem.StartAt)
+            .ToListAsync();
     }
 
-    public PaginatedResult<Event> GetEventsFiltered(string? title = null, DateTime? from = null, DateTime? to = null, int page = 1, int pageSize = 10)
+    public async Task<PaginatedResult<Event>> GetEventsFilteredAsync(
+        string? title = null,
+        DateTime? from = null,
+        DateTime? to = null,
+        int page = 1,
+        int pageSize = 10)
     {
-        var query = InMemoryEventStore.Events.Values.AsQueryable();
+        IQueryable<Event> query = _context.Events.AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(title))
         {
-            query = query.Where(e => e.Title.Contains(title, StringComparison.OrdinalIgnoreCase));
+            var normalizedTitle = title.ToLower();
+            query = query.Where(eventItem => eventItem.Title.ToLower().Contains(normalizedTitle));
         }
 
         if (from.HasValue)
         {
-            query = query.Where(e => e.StartAt >= from.Value);
+            query = query.Where(eventItem => eventItem.StartAt >= from.Value);
         }
 
         if (to.HasValue)
         {
-            query = query.Where(e => e.EndAt <= to.Value);
+            query = query.Where(eventItem => eventItem.EndAt <= to.Value);
         }
 
-        var totalCount = query.Count();
-        var items = query
-            .OrderBy(e => e.StartAt)
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(eventItem => eventItem.StartAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
-            .ToList();
+            .ToListAsync();
 
         return new PaginatedResult<Event>
         {
@@ -48,63 +56,53 @@ public class EventService : IEventService
         };
     }
 
-    public Event? GetEventById(Guid id)
+    public Task<Event?> GetEventByIdAsync(Guid id)
     {
-        InMemoryEventStore.Events.TryGetValue(id, out var foundEvent);
-        return foundEvent;
+        return _context.Events.AsNoTracking().FirstOrDefaultAsync(eventItem => eventItem.Id == id);
     }
 
-    public Event CreateEvent(CreateEventRequest newEvent)
+    public async Task<Event> CreateEventAsync(CreateEventRequest newEvent)
     {
-        if (newEvent.TotalSeats <= 0)
-        {
-            throw new ArgumentException("TotalSeats must be greater than zero.");
-        }
+        var createdEvent = Event.Create(newEvent);
 
-        var createdEvent = new Event
-        {
-            Id = Guid.NewGuid(),
-            Title = newEvent.Title.Trim(),
-            Description = newEvent.Description,
-            StartAt = newEvent.StartAt,
-            EndAt = newEvent.EndAt,
-            TotalSeats = newEvent.TotalSeats,
-            AvailableSeats = newEvent.TotalSeats,
-        };
-
-        InMemoryEventStore.Events[createdEvent.Id] = createdEvent;
+        _context.Events.Add(createdEvent);
+        await _context.SaveChangesAsync();
         return createdEvent;
     }
 
-    public Event? UpdateEvent(Guid id, UpdateEventRequest updatedEvent)
+    public async Task<Event?> UpdateEventAsync(Guid id, UpdateEventRequest updatedEvent)
     {
-        if (!InMemoryEventStore.Events.TryGetValue(id, out var existingEvent))
+        var eventItem = await _context.Events.FindAsync(id);
+        if (eventItem is null)
         {
             return null;
         }
 
-        var newState = new Event
+        eventItem.Title = updatedEvent.Title.Trim();
+        eventItem.Description = updatedEvent.Description;
+        eventItem.StartAt = updatedEvent.StartAt;
+        eventItem.EndAt = updatedEvent.EndAt;
+
+        await _context.SaveChangesAsync();
+        return eventItem;
+    }
+
+    public async Task<bool> DeleteEventAsync(Guid id)
+    {
+        var eventItem = await _context.Events.FindAsync(id);
+        if (eventItem is null)
         {
-            Id = existingEvent.Id,
-            Title = updatedEvent.Title.Trim(),
-            Description = updatedEvent.Description,
-            StartAt = updatedEvent.StartAt,
-            EndAt = updatedEvent.EndAt,
-            TotalSeats = existingEvent.TotalSeats,
-            AvailableSeats = existingEvent.AvailableSeats,
-        };
+            return false;
+        }
 
-        InMemoryEventStore.Events[id] = newState;
-        return newState;
+        _context.Events.Remove(eventItem);
+        await _context.SaveChangesAsync();
+        return true;
     }
 
-    public bool DeleteEvent(Guid id)
+    public async Task ClearAllEventsAsync()
     {
-        return InMemoryEventStore.Events.TryRemove(id, out _);
-    }
-
-    public void ClearAllEvents()
-    {
-        InMemoryEventStore.Events.Clear();
+        _context.Events.RemoveRange(_context.Events);
+        await _context.SaveChangesAsync();
     }
 }
