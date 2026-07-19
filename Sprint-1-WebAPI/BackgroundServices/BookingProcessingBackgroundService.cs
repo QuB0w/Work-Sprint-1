@@ -1,5 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using Sprint_1_WebAPI.DataAccess;
+using Sprint_1_WebAPI.DataAccess.Repositories;
 using Sprint_1_WebAPI.Models;
 
 namespace Sprint_1_WebAPI.BackgroundServices;
@@ -47,11 +46,8 @@ public class BookingProcessingBackgroundService : BackgroundService
     private async Task ProcessPendingBookingsAsync(CancellationToken stoppingToken)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
-        var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        var pendingBookingIds = await context.Bookings
-            .Where(booking => booking.Status == BookingStatus.Pending)
-            .Select(booking => booking.Id)
-            .ToListAsync(stoppingToken);
+        var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var pendingBookingIds = await bookingRepository.GetPendingBookingIdsAsync(stoppingToken);
 
         await Task.WhenAll(pendingBookingIds.Select(id => ProcessBookingAsync(id, stoppingToken)));
     }
@@ -63,18 +59,20 @@ public class BookingProcessingBackgroundService : BackgroundService
             await Task.Delay(ProcessingDelay, stoppingToken);
 
             await using var scope = _scopeFactory.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var booking = await context.Bookings.FindAsync([bookingId], stoppingToken);
+            var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+            var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+            var booking = await bookingRepository.GetByIdAsync(bookingId, stoppingToken);
             if (booking is null || booking.Status != BookingStatus.Pending)
             {
                 return;
             }
 
-            var eventItem = await context.Events.FindAsync([booking.EventId], stoppingToken);
+            var eventItem = await eventRepository.GetByIdAsync(booking.EventId, stoppingToken);
             if (eventItem is null)
             {
                 booking.Reject();
-                await context.SaveChangesAsync(stoppingToken);
+                await bookingRepository.UpdateAsync(booking, stoppingToken);
                 _logger.LogWarning(
                     "Booking {BookingId}: event {EventId} not found — booking rejected.",
                     booking.Id,
@@ -83,7 +81,7 @@ public class BookingProcessingBackgroundService : BackgroundService
             }
 
             booking.Confirm();
-            await context.SaveChangesAsync(stoppingToken);
+            await bookingRepository.UpdateAsync(booking, stoppingToken);
             _logger.LogInformation("Booking {BookingId} for event {EventId} confirmed.", booking.Id, booking.EventId);
         }
         catch (OperationCanceledException)
@@ -101,21 +99,23 @@ public class BookingProcessingBackgroundService : BackgroundService
         try
         {
             await using var scope = _scopeFactory.CreateAsyncScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            var booking = await context.Bookings.FindAsync(bookingId);
+            var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+            var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+
+            var booking = await bookingRepository.GetByIdAsync(bookingId);
             if (booking is null || booking.Status != BookingStatus.Pending)
             {
                 return;
             }
 
-            var eventItem = await context.Events.FindAsync(booking.EventId);
+            var eventItem = await eventRepository.GetByIdAsync(booking.EventId);
             booking.Reject();
             if (eventItem is not null)
             {
                 eventItem.ReleaseSeats();
             }
 
-            await context.SaveChangesAsync();
+            await bookingRepository.UpdateAsync(booking);
         }
         catch (Exception releaseEx)
         {

@@ -10,6 +10,8 @@
 - **Пагинация**: Поддержка постраничной выдачи с настраиваемым размером страницы
 - **Глобальная обработка ошибок**: Централизованная обработка исключений с единым форматом JSON-ответов
 - **Юнит-тестирование**: Комплексное покрытие тестами с использованием xUnit
+- **Интеграционное тестирование**: Проверка слоя данных на реальной PostgreSQL через Testcontainers
+- **Репозиторный слой**: Работа с `DbContext` инкапсулирована в `IEventRepository` и `IBookingRepository`
 - **Swagger документация**: Интерактивная документация API
 
 ## Используемые технологии
@@ -18,7 +20,8 @@
 - ASP.NET Core Web API
 - Entity Framework Core 9
 - PostgreSQL через Npgsql.EntityFrameworkCore.PostgreSQL
-- xUnit и EF Core InMemory для тестирования
+- xUnit и EF Core InMemory для юнит-тестирования
+- Интеграционные тесты на реальной PostgreSQL через Testcontainers
 - Swagger/OpenAPI для документации
 
 ## Начало работы
@@ -39,7 +42,25 @@
    ```json
    "DefaultConnection": "Host=localhost;Port=5432;Database=eventapi;Username=postgres;Password=postgres"
    ```
-3. При первом запуске `AppDbContext` вызывает `Database.EnsureCreated()`, который создаёт таблицы `events` и `bookings` автоматически.
+3. Схема базы данных управляется миграциями EF Core. При старте приложение применяет ожидающие миграции через `Database.Migrate()`.
+
+### Миграции EF Core
+
+Для генерации миграций необходим пакет `Microsoft.EntityFrameworkCore.Design`.
+
+```bash
+cd Sprint-1-WebAPI
+dotnet ef migrations add InitialCreate
+```
+
+Чтобы применить миграции к базе данных:
+
+```bash
+cd Sprint-1-WebAPI
+dotnet ef database update
+```
+
+При запуске приложения миграции применяются автоматически.
 
 ### Запуск приложения
 
@@ -62,9 +83,14 @@ API будет доступен по адресу `https://localhost:7xxx`, а S
 dotnet test
 ```
 
-Или запустите тесты для конкретного тестового проекта:
+Юнит-тесты:
 ```bash
 dotnet test EventService.Tests/EventService.Tests.csproj
+```
+
+Интеграционные тесты поднимают реальный контейнер PostgreSQL через Testcontainers, поэтому для их запуска необходим запущенный Docker:
+```bash
+dotnet test EventApi.IntegrationTests/EventApi.IntegrationTests.csproj
 ```
 
 ## Эндпоинты API
