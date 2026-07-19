@@ -28,7 +28,7 @@ public sealed class MigrationsTests : IDisposable
         await using var scope = _serviceProvider.CreateAsyncScope();
         var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-        await using var connection = context.Database.GetDbConnection();
+        var connection = context.Database.GetDbConnection();
         await connection.OpenAsync();
 
         var eventsTableExists = await TableExistsAsync(connection, "events");

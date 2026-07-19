@@ -141,8 +141,8 @@ public sealed class EventRepositoryTests : IDisposable
         var toDate = DateTime.UtcNow.AddDays(5);
 
         await repository.AddAsync(CreateEvent(title, startAt: fromDate.AddDays(-2), endAt: fromDate.AddDays(-1)));
-        await repository.AddAsync(CreateEvent(title, startAt: fromDate.AddDays(1), endAt: toDate.AddDays(1)));
-        await repository.AddAsync(CreateEvent("Other", startAt: fromDate.AddDays(1), endAt: toDate.AddDays(1)));
+        await repository.AddAsync(CreateEvent(title, startAt: fromDate.AddDays(1), endAt: toDate.AddDays(-1)));
+        await repository.AddAsync(CreateEvent("Other", startAt: fromDate.AddDays(1), endAt: toDate.AddDays(-1)));
 
         var result = await repository.GetFilteredAsync(title, fromDate, toDate, 1, 10);
 
