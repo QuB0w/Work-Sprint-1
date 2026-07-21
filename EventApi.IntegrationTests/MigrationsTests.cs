@@ -1,7 +1,7 @@
 using System.Data.Common;
+using EventApi.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sprint_1_WebAPI.DataAccess;
 
 namespace EventApi.IntegrationTests;
 

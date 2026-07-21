@@ -1,19 +1,15 @@
-using Interfaces;
+using EventApi.Application;
+using EventApi.Infrastructure;
+using EventApi.Infrastructure.Data;
+using EventApi.Presentation.Middleware;
 using Microsoft.EntityFrameworkCore;
-using Sprint_1_WebAPI.BackgroundServices;
-using Sprint_1_WebAPI.DataAccess;
-using Sprint_1_WebAPI.DataAccess.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IEventRepository, EventRepository>();
-builder.Services.AddScoped<IBookingRepository, BookingRepository>();
-builder.Services.AddScoped<IEventService, EventService>();
-builder.Services.AddScoped<IBookingService, BookingService>();
-builder.Services.AddHostedService<BookingProcessingBackgroundService>();
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices(
+    builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();

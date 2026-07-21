@@ -20,7 +20,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Sprint-1-WebAPI\Sprint-1-WebAPI.csproj" />
+    <ProjectReference Include="..\EventApi.Application\EventApi.Application.csproj" />
+    <ProjectReference Include="..\EventApi.Infrastructure\EventApi.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>

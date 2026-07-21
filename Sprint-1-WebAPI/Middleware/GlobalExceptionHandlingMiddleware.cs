@@ -1,6 +1,8 @@
 using System.Net;
 using System.Text.Json;
-using Sprint_1_WebAPI.Exceptions;
+using EventApi.Domain.Exceptions;
+
+namespace EventApi.Presentation.Middleware;
 
 public class GlobalExceptionHandlingMiddleware
 {

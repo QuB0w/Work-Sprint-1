@@ -1,7 +1,8 @@
+using EventApi.Application.Interfaces;
+using EventApi.Infrastructure.Data;
+using EventApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sprint_1_WebAPI.DataAccess;
-using Sprint_1_WebAPI.DataAccess.Repositories;
 using Testcontainers.PostgreSql;
 
 namespace EventApi.IntegrationTests;

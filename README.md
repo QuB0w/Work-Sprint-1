@@ -46,21 +46,23 @@
 
 ### Миграции EF Core
 
-Для генерации миграций необходим пакет `Microsoft.EntityFrameworkCore.Design`.
+Миграции находятся в проекте `EventApi.Infrastructure`. Для генерации новых миграций укажите проект с `DbContext` через параметр `--project` и стартовый проект через `--startup-project`:
 
 ```bash
-cd Sprint-1-WebAPI
-dotnet ef migrations add InitialCreate
+dotnet ef migrations add <MigrationName> \
+  --project EventApi.Infrastructure \
+  --startup-project Sprint-1-WebAPI
 ```
 
 Чтобы применить миграции к базе данных:
 
 ```bash
-cd Sprint-1-WebAPI
-dotnet ef database update
+dotnet ef database update \
+  --project EventApi.Infrastructure \
+  --startup-project Sprint-1-WebAPI
 ```
 
-При запуске приложения миграции применяются автоматически.
+При запуске приложения миграции применяются автоматически через `Database.Migrate()`.
 
 ### Запуск приложения
 
@@ -299,39 +301,75 @@ POST /events/{id}/book
 
 ## Разработка
 
-### Структура проекта
+### Структура проекта (Clean Architecture)
+
+Проект разделён на четыре слоя в соответствии с принципами чистой архитектуры:
 
 ```
-Sprint-1-WebAPI/
-├── BackgroundServices/
-│   └── BookingProcessingBackgroundService.cs
+EventApi.Domain/              ← Доменный слой (не зависит ни от чего)
+├── Entities/
+│   ├── Event.cs
+│   └── Booking.cs
+├── Enums/
+│   └── BookingStatus.cs
+├── Exceptions/
+│   └── NoAvailableSeatsException.cs
+└── Models/
+    └── PaginatedResult.cs
+
+EventApi.Application/         ← Слой приложения (зависит только от Domain)
+├── DTOs/
+│   ├── BookingInfo.cs
+│   ├── CreateBookingRequest.cs
+│   ├── CreateEventRequest.cs
+│   └── UpdateEventRequest.cs
+├── Interfaces/
+│   ├── IBookingRepository.cs
+│   ├── IBookingService.cs
+│   ├── IEventRepository.cs
+│   └── IEventService.cs
+├── Services/
+│   ├── BookingProcessingBackgroundService.cs
+│   ├── BookingService.cs
+│   └── EventService.cs
+└── DependencyInjection.cs
+
+EventApi.Infrastructure/      ← Инфраструктурный слой (зависит от Application и Domain)
+├── Data/
+│   ├── AppDbContext.cs
+│   └── Configurations/
+│       ├── BookingConfiguration.cs
+│       └── EventConfiguration.cs
+├── Migrations/
+│   └── 20260719115609_InitialCreate.cs
+├── Repositories/
+│   ├── BookingRepository.cs
+│   └── EventRepository.cs
+└── DependencyInjection.cs
+
+Sprint-1-WebAPI/              ← Presentation (зависит от Application и Infrastructure)
 ├── Controllers/
 │   ├── EventController.cs
 │   └── BookingController.cs
-├── DataAccess/
-│   ├── IBookingStore.cs
-│   └── InMemoryBookingStore.cs
 ├── Middleware/
 │   └── GlobalExceptionHandlingMiddleware.cs
-├── Models/
-│   ├── Booking.cs
-│   ├── Event.cs
-│   └── PaginatedResult.cs
-├── Interfaces/
-│   ├── IBookingService.cs
-│   └── IEventService.cs
-├── BookingService.cs
-├── EventService.cs
-├── Program.cs
-└── Sprint-1-WebAPI.csproj
+└── Program.cs                ← Composition Root
 
-EventService.Tests/
-├── BookingEntityTests.cs
-├── BookingServiceTests.cs
-├── EventServiceTests.cs
-├── InMemoryBookingStoreTests.cs
-└── EventService.Tests.csproj
+EventService.Tests/           ← Юнит-тесты (ссылается на Application и Infrastructure)
+EventApi.IntegrationTests/    ← Интеграционные тесты (Testcontainers + PostgreSQL)
 ```
+
+#### Направление зависимостей
+
+```
+Presentation → Application → Domain
+Presentation → Infrastructure → Application → Domain
+```
+
+- **Domain** не зависит ни от каких внешних пакетов или слоёв.
+- **Application** определяет интерфейсы портов (репозитории) и не зависит от Infrastructure.
+- **Infrastructure** реализует порты и содержит все инфраструктурные зависимости (EF Core, Npgsql).
+- **Presentation** — composition root, регистрирует все зависимости через extension-методы `AddApplicationServices()` и `AddInfrastructureServices()`.
 
 ### Добавление новой функциональности
 
@@ -511,6 +549,29 @@ GET /bookings/{bookingId}     # { "status": "Confirmed", "processedAt": "..." }
 - Для конкурентного бронирования используется статический `SemaphoreSlim`, поскольку scoped DbContext требует асинхронных вызовов внутри критической секции.
 - Фоновый сервис получает DbContext только через `IServiceScopeFactory`: отдельный scope для выборки идентификаторов и отдельный scope на каждую обрабатываемую бронь.
 - Тесты используют `Microsoft.EntityFrameworkCore.InMemory`; имя базы создаётся один раз на тестовый класс и используется всеми scope этого класса.
+
+## Новые возможности в Sprint 7
+
+### ✅ Чистая архитектура (Clean Architecture)
+
+Солюшен разделён на четыре отдельных проекта-сборки:
+
+| Проект | Ответственность | Зависит от |
+|--------|----------------|------------|
+| `EventApi.Domain` | Сущности, перечисления, доменные исключения | — |
+| `EventApi.Application` | Use cases (сервисы), интерфейсы портов, DTO, фоновый сервис | Domain |
+| `EventApi.Infrastructure` | DbContext, миграции, репозитории, конфигурации EF Core | Application, Domain |
+| `Sprint-1-WebAPI` (Presentation) | Контроллеры, middleware, composition root | Application, Infrastructure |
+
+**Ключевые принципы:**
+- `Application` **не зависит** от `Infrastructure` — только через интерфейсы портов
+- Направление зависимостей строго внутрь: Presentation → Application → Domain
+- Composition root находится в `Program.cs` (Presentation)
+- Для регистрации зависимостей используются extension-методы: `AddApplicationServices()`, `AddInfrastructureServices()`
+- Контроллеры тонкие — не содержат бизнес-логики
+- Domain не содержит ссылок на сторонние фреймворки (ASP.NET, EF Core)
+
+**Тестовые проекты** ссылаются на конкретные слои (`Application` + `Infrastructure`), а не на монолитный Presentation-проект.
 
 ## Лицензия
 

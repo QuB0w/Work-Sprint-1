@@ -1,4 +1,5 @@
-using Sprint_1_WebAPI.Models;
+using EventApi.Domain.Entities;
+using EventApi.Domain.Enums;
 using Xunit;
 
 namespace EventServiceUnitTests;

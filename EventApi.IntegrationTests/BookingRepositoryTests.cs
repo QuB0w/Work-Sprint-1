@@ -1,6 +1,7 @@
+using EventApi.Application.Interfaces;
+using EventApi.Domain.Entities;
+using EventApi.Domain.Enums;
 using Microsoft.Extensions.DependencyInjection;
-using Sprint_1_WebAPI.DataAccess.Repositories;
-using Sprint_1_WebAPI.Models;
 
 namespace EventApi.IntegrationTests;
 
@@ -167,13 +168,6 @@ public sealed class BookingRepositoryTests : IDisposable
     private static Event CreateEvent(string title)
     {
         var start = DateTime.UtcNow.AddDays(1);
-        return Event.Create(new CreateEventRequest
-        {
-            Title = title,
-            Description = "Test description",
-            StartAt = start,
-            EndAt = start.AddHours(1),
-            TotalSeats = 10
-        });
+        return Event.Create(title, "Test description", start, start.AddHours(1), 10);
     }
 }

@@ -1,8 +1,9 @@
-using Interfaces;
+using EventApi.Application.Interfaces;
+using EventApi.Application.Services;
+using EventApi.Infrastructure.Data;
+using EventApi.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Sprint_1_WebAPI.DataAccess;
-using Sprint_1_WebAPI.DataAccess.Repositories;
 
 namespace EventServiceUnitTests;
 

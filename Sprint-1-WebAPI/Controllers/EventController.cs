@@ -1,6 +1,10 @@
-using Interfaces;
+using EventApi.Application.DTOs;
+using EventApi.Application.Interfaces;
+using EventApi.Domain.Entities;
+using EventApi.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
-using Sprint_1_WebAPI.Models;
+
+namespace EventApi.Presentation.Controllers;
 
 [ApiController]
 [Route("events")]

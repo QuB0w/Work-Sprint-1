@@ -1,7 +1,8 @@
-using Interfaces;
+using EventApi.Application.DTOs;
+using EventApi.Application.Interfaces;
+using EventApi.Domain.Enums;
+using EventApi.Domain.Exceptions;
 using Microsoft.Extensions.DependencyInjection;
-using Sprint_1_WebAPI.Exceptions;
-using Sprint_1_WebAPI.Models;
 using Xunit;
 
 namespace EventServiceUnitTests;

@@ -1,7 +1,8 @@
-using Interfaces;
+using EventApi.Application.DTOs;
+using EventApi.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Sprint_1_WebAPI.Exceptions;
-using Sprint_1_WebAPI.Models;
+
+namespace EventApi.Presentation.Controllers;
 
 [ApiController]
 public class BookingController(IBookingService _bookingService) : ControllerBase
