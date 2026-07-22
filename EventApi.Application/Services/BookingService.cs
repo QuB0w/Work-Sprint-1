@@ -18,7 +18,7 @@ public class BookingService : IBookingService
         _bookingRepository = bookingRepository;
     }
 
-    public async Task<BookingInfo?> CreateBookingAsync(Guid eventId)
+    public async Task<BookingInfo?> CreateBookingAsync(Guid eventId, Guid userId)
     {
         await BookingSemaphore.WaitAsync();
         try
@@ -29,12 +29,23 @@ public class BookingService : IBookingService
                 return null;
             }
 
+            if (eventItem.StartAt <= DateTime.UtcNow)
+            {
+                throw new EventAlreadyStartedException();
+            }
+
+            var activeCount = await _bookingRepository.CountActiveByUserAsync(userId);
+            if (activeCount >= ActiveBookingLimitExceededException.MaxActiveBookings)
+            {
+                throw new ActiveBookingLimitExceededException();
+            }
+
             if (!eventItem.TryReserveSeats())
             {
                 throw new NoAvailableSeatsException();
             }
 
-            var booking = Booking.CreatePending(eventId);
+            var booking = Booking.CreatePending(eventId, userId);
             await _bookingRepository.AddAsync(booking);
 
             return MapToBookingInfo(booking);
@@ -49,6 +60,27 @@ public class BookingService : IBookingService
     {
         var booking = await _bookingRepository.GetByIdAsNoTrackingAsync(bookingId);
         return booking is null ? null : MapToBookingInfo(booking);
+    }
+
+    public async Task CancelBookingAsync(Guid bookingId, Guid userId, string userRole)
+    {
+        var booking = await _bookingRepository.GetByIdAsync(bookingId)
+            ?? throw new KeyNotFoundException($"Booking with id {bookingId} was not found.");
+
+        if (userRole != "Admin" && booking.UserId != userId)
+        {
+            throw new ForbiddenException("You can only cancel your own bookings.");
+        }
+
+        booking.Cancel();
+
+        var eventItem = await _eventRepository.GetByIdAsync(booking.EventId);
+        if (eventItem is not null)
+        {
+            eventItem.ReleaseSeats();
+        }
+
+        await _bookingRepository.UpdateAsync(booking);
     }
 
     public async Task ConfirmBookingAsync(Guid bookingId)

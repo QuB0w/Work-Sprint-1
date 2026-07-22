@@ -10,6 +10,7 @@ namespace EventServiceUnitTests;
 public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
 {
     private readonly ServiceProvider _serviceProvider;
+    private static readonly Guid TestUserId = Guid.NewGuid();
 
     public EfCoreServiceTests(EfServiceTestFixture fixture)
     {
@@ -38,7 +39,7 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
         var eventItem = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 2));
 
-        var booking = await bookingService.CreateBookingAsync(eventItem.Id);
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, TestUserId);
         var updatedEvent = await eventService.GetEventByIdAsync(eventItem.Id);
 
         Assert.NotNull(booking);
@@ -53,9 +54,70 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
         var eventItem = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 1));
-        await bookingService.CreateBookingAsync(eventItem.Id);
+        await bookingService.CreateBookingAsync(eventItem.Id, TestUserId);
 
-        await Assert.ThrowsAsync<NoAvailableSeatsException>(() => bookingService.CreateBookingAsync(eventItem.Id));
+        await Assert.ThrowsAsync<NoAvailableSeatsException>(
+            () => bookingService.CreateBookingAsync(eventItem.Id, Guid.NewGuid()));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_PastEvent_ThrowsEventAlreadyStartedException()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var pastRequest = new CreateEventRequest
+        {
+            Title = "Past event",
+            StartAt = DateTime.UtcNow.AddHours(-2),
+            EndAt = DateTime.UtcNow.AddHours(-1),
+            TotalSeats = 10
+        };
+        var eventItem = await eventService.CreateEventAsync(pastRequest);
+
+        await Assert.ThrowsAsync<EventAlreadyStartedException>(
+            () => bookingService.CreateBookingAsync(eventItem.Id, TestUserId));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_ExceedsActiveBookingLimit_ThrowsActiveBookingLimitExceededException()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var userId = Guid.NewGuid();
+        for (int i = 0; i < ActiveBookingLimitExceededException.MaxActiveBookings; i++)
+        {
+            var ev = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 100));
+            await bookingService.CreateBookingAsync(ev.Id, userId);
+        }
+
+        var lastEvent = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 100));
+        await Assert.ThrowsAsync<ActiveBookingLimitExceededException>(
+            () => bookingService.CreateBookingAsync(lastEvent.Id, userId));
+    }
+
+    [Fact]
+    public async Task CreateBookingAsync_DifferentUsersLimitsAreIndependent()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var user1 = Guid.NewGuid();
+        var user2 = Guid.NewGuid();
+
+        for (int i = 0; i < ActiveBookingLimitExceededException.MaxActiveBookings; i++)
+        {
+            var ev = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 100));
+            await bookingService.CreateBookingAsync(ev.Id, user1);
+        }
+
+        var eventForUser2 = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 100));
+        var booking = await bookingService.CreateBookingAsync(eventForUser2.Id, user2);
+        Assert.NotNull(booking);
     }
 
     [Fact]
@@ -78,7 +140,7 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
                 var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
                 try
                 {
-                    return await bookingService.CreateBookingAsync(eventId);
+                    return await bookingService.CreateBookingAsync(eventId, Guid.NewGuid());
                 }
                 catch (NoAvailableSeatsException)
                 {
@@ -103,7 +165,7 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
         var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
         var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
         var eventItem = await eventService.CreateEventAsync(CreateEventRequest());
-        var booking = await bookingService.CreateBookingAsync(eventItem.Id);
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, TestUserId);
 
         await bookingService.ConfirmBookingAsync(booking!.Id);
         var result = await bookingService.GetBookingByIdAsync(booking.Id);
@@ -117,8 +179,8 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
         return new CreateEventRequest
         {
             Title = "Test event",
-            StartAt = DateTime.UtcNow,
-            EndAt = DateTime.UtcNow.AddHours(1),
+            StartAt = DateTime.UtcNow.AddDays(1),
+            EndAt = DateTime.UtcNow.AddDays(1).AddHours(1),
             TotalSeats = totalSeats
         };
     }

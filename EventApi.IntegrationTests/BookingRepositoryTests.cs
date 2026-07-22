@@ -28,14 +28,17 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("bookingadd"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Booking add"));
-        var booking = Booking.CreatePending(eventItem.Id);
+        var booking = Booking.CreatePending(eventItem.Id, user.Id);
         var persisted = await bookingRepository.AddAsync(booking);
         var fromDb = await bookingRepository.GetByIdAsNoTrackingAsync(persisted.Id);
 
         Assert.NotNull(fromDb);
         Assert.Equal(eventItem.Id, fromDb.EventId);
+        Assert.Equal(user.Id, fromDb.UserId);
         Assert.Equal(BookingStatus.Pending, fromDb.Status);
     }
 
@@ -46,9 +49,11 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("bookingget"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Booking get"));
-        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
+        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
 
         var fromDb = await bookingRepository.GetByIdAsync(booking.Id);
 
@@ -75,10 +80,12 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("pendingfilter"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Pending filter"));
-        var pending = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
-        var confirmed = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
+        var pending = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
+        var confirmed = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
         confirmed.Confirm();
         await bookingRepository.UpdateAsync(confirmed);
 
@@ -96,9 +103,11 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("updatestatus"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Update status"));
-        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
+        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
 
         booking.Confirm();
         await bookingRepository.UpdateAsync(booking);
@@ -117,9 +126,11 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("deletebooking"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Delete booking"));
-        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
+        var booking = await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
 
         var deleted = await bookingRepository.DeleteAsync(booking.Id);
         var fromDb = await bookingRepository.GetByIdAsNoTrackingAsync(booking.Id);
@@ -147,10 +158,12 @@ public sealed class BookingRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(CreateUser("clearbookings"));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Clear bookings"));
-        await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
-        await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id));
+        await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
+        await bookingRepository.AddAsync(Booking.CreatePending(eventItem.Id, user.Id));
         await bookingRepository.ClearAllAsync();
 
         var pendingIds = await bookingRepository.GetPendingBookingIdsAsync();
@@ -169,5 +182,10 @@ public sealed class BookingRepositoryTests : IDisposable
     {
         var start = DateTime.UtcNow.AddDays(1);
         return Event.Create(title, "Test description", start, start.AddHours(1), 10);
+    }
+
+    private static User CreateUser(string login)
+    {
+        return User.Create(login, "testhash", EventApi.Domain.Enums.UserRole.User);
     }
 }

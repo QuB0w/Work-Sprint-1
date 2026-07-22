@@ -202,9 +202,12 @@ public sealed class EventRepositoryTests : IDisposable
         using var scope = services.CreateScope();
         var eventRepository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
         var bookingRepository = scope.ServiceProvider.GetRequiredService<IBookingRepository>();
+        var userRepository = scope.ServiceProvider.GetRequiredService<IUserRepository>();
 
+        var user = await userRepository.AddAsync(
+            User.Create("cascadeuser", "hash", EventApi.Domain.Enums.UserRole.User));
         var eventItem = await eventRepository.AddAsync(CreateEvent("Cascade test", totalSeats: 1));
-        var booking = Booking.CreatePending(eventItem.Id);
+        var booking = Booking.CreatePending(eventItem.Id, user.Id);
         await bookingRepository.AddAsync(booking);
 
         var deleted = await eventRepository.DeleteAsync(eventItem.Id);

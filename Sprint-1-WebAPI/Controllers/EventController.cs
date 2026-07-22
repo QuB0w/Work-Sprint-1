@@ -2,6 +2,7 @@ using EventApi.Application.DTOs;
 using EventApi.Application.Interfaces;
 using EventApi.Domain.Entities;
 using EventApi.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace EventApi.Presentation.Controllers;
@@ -45,6 +46,7 @@ public class EventController(IEventService _eventService) : ControllerBase
     }
 
     [HttpPost]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Event>> CreateEvent([FromBody] CreateEventRequest newEvent)
     {
         if (newEvent.StartAt >= newEvent.EndAt)
@@ -57,6 +59,7 @@ public class EventController(IEventService _eventService) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<Event>> UpdateEvent(Guid id, [FromBody] UpdateEventRequest updatedEvent)
     {
         if (updatedEvent.StartAt >= updatedEvent.EndAt)
@@ -74,6 +77,7 @@ public class EventController(IEventService _eventService) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Roles = "Admin")]
     public async Task<ActionResult> DeleteEvent(Guid id)
     {
         var deleted = await _eventService.DeleteEventAsync(id);

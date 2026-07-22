@@ -40,6 +40,18 @@ public class GlobalExceptionHandlingMiddleware
 
         switch (exception)
         {
+            case ForbiddenException forbiddenEx:
+                response.StatusCode = (int)HttpStatusCode.Forbidden;
+                response.Message = forbiddenEx.Message;
+                break;
+            case EventAlreadyStartedException startedEx:
+                response.StatusCode = (int)HttpStatusCode.BadRequest;
+                response.Message = startedEx.Message;
+                break;
+            case ActiveBookingLimitExceededException limitEx:
+                response.StatusCode = (int)HttpStatusCode.Conflict;
+                response.Message = limitEx.Message;
+                break;
             case NoAvailableSeatsException noSeatsEx:
                 response.StatusCode = (int)HttpStatusCode.Conflict;
                 response.Message = noSeatsEx.Message;
