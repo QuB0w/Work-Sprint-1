@@ -174,6 +174,78 @@ public class EfCoreServiceTests : IClassFixture<EfServiceTestFixture>
         Assert.NotNull(result.ProcessedAt);
     }
 
+    [Fact]
+    public async Task CancelBookingAsync_OtherUser_ThrowsForbiddenException()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var owner = Guid.NewGuid();
+        var stranger = Guid.NewGuid();
+        var eventItem = await eventService.CreateEventAsync(CreateEventRequest());
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, owner);
+
+        await Assert.ThrowsAsync<ForbiddenException>(
+            () => bookingService.CancelBookingAsync(booking!.Id, stranger, "User"));
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_AdminCanCancelAnyBooking()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var owner = Guid.NewGuid();
+        var admin = Guid.NewGuid();
+        var eventItem = await eventService.CreateEventAsync(CreateEventRequest());
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, owner);
+
+        await bookingService.CancelBookingAsync(booking!.Id, admin, "Admin");
+
+        var result = await bookingService.GetBookingByIdAsync(booking.Id);
+        Assert.Equal(BookingStatus.Cancelled, result!.Status);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_OwnerCanCancelOwnBooking()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var owner = Guid.NewGuid();
+        var eventItem = await eventService.CreateEventAsync(CreateEventRequest());
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, owner);
+
+        await bookingService.CancelBookingAsync(booking!.Id, owner, "User");
+
+        var result = await bookingService.GetBookingByIdAsync(booking.Id);
+        Assert.Equal(BookingStatus.Cancelled, result!.Status);
+        Assert.NotNull(result.ProcessedAt);
+    }
+
+    [Fact]
+    public async Task CancelBookingAsync_ReleasesSeatBackToEvent()
+    {
+        using var scope = _serviceProvider.CreateScope();
+        var eventService = scope.ServiceProvider.GetRequiredService<IEventService>();
+        var bookingService = scope.ServiceProvider.GetRequiredService<IBookingService>();
+
+        var owner = Guid.NewGuid();
+        var eventItem = await eventService.CreateEventAsync(CreateEventRequest(totalSeats: 2));
+        var booking = await bookingService.CreateBookingAsync(eventItem.Id, owner);
+
+        var beforeCancel = await eventService.GetEventByIdAsync(eventItem.Id);
+        Assert.Equal(1, beforeCancel!.AvailableSeats);
+
+        await bookingService.CancelBookingAsync(booking!.Id, owner, "User");
+
+        var afterCancel = await eventService.GetEventByIdAsync(eventItem.Id);
+        Assert.Equal(2, afterCancel!.AvailableSeats);
+    }
+
     private static CreateEventRequest CreateEventRequest(int totalSeats = 10)
     {
         return new CreateEventRequest
