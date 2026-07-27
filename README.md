@@ -573,6 +573,127 @@ GET /bookings/{bookingId}     # { "status": "Confirmed", "processedAt": "..." }
 
 **Тестовые проекты** ссылаются на конкретные слои (`Application` + `Infrastructure`), а не на монолитный Presentation-проект.
 
+## Новые возможности в Sprint 9
+
+### ✅ Декомпозиция на микросервисы
+
+Монолит разделён на три самостоятельных микросервиса, каждый со своей базой данных PostgreSQL и слоями чистой архитектуры (Domain, Application, Infrastructure, Presentation).
+
+| Сервис | Порт | База данных | Ответственность |
+|--------|------|-------------|-----------------|
+| Users | 5100 | users_db | Регистрация, аутентификация, выдача JWT |
+| Events | 5200 | events_db | CRUD мероприятий, учёт доступных мест |
+| Bookings | 5300 | bookings_db | Создание и отмена броней |
+
+### ✅ Асинхронное взаимодействие через Apache Kafka
+
+Сервисы **не вызывают друг друга напрямую по HTTP**. Обмен данными идёт через Kafka:
+
+1. Сервис **Bookings** подтверждает бронь (фоновый `BookingConfirmationService`).
+2. После сохранения статуса `Confirmed` в свою базу, публикует событие `BookingConfirmed` в топик `booking-confirmed`.
+3. Сервис **Events** подписан на этот топик через `BookingConfirmedConsumer` (`BackgroundService`).
+4. При получении события уменьшает `AvailableSeats` у соответствующего мероприятия.
+
+**Контракт события** вынесен в общий проект `EventApi.Contracts`:
+- `BookingConfirmedEvent` — record с полями `BookingId`, `EventId`, `UserId`, `Seats`, `ConfirmedAt`.
+- `Topics.BookingConfirmed` — константа с именем топика.
+
+**Ключ сообщения** — `EventId`, что гарантирует последовательную обработку броней одного события.
+
+### ✅ JWT (общий секрет)
+
+Токен выдаёт только сервис Users (`POST /auth/login`). Сервисы Events и Bookings проверяют этот же токен, используя одинаковые `Secret`, `Issuer`, `Audience`.
+
+### ✅ Docker Compose
+
+Вся система запускается одной командой:
+
+```bash
+docker compose up --build
+```
+
+Состав:
+- **Zookeeper** — координатор Kafka
+- **Kafka** — брокер сообщений
+- **users-db / events-db / bookings-db** — три отдельных PostgreSQL
+- **users-service / events-service / bookings-service** — три приложения
+
+### Структура проекта
+
+```
+src/
+├── Shared/EventApi.Contracts/       # Общий контракт событий и имена топиков
+├── Users/
+│   ├── Users.Domain/
+│   ├── Users.Application/
+│   ├── Users.Infrastructure/
+│   ├── Users.Presentation/
+│   └── Dockerfile
+├── Events/
+│   ├── Events.Domain/
+│   ├── Events.Application/
+│   ├── Events.Infrastructure/
+│   ├── Events.Presentation/
+│   └── Dockerfile
+└── Bookings/
+    ├── Bookings.Domain/
+    ├── Bookings.Application/
+    ├── Bookings.Infrastructure/
+    ├── Bookings.Presentation/
+    └── Dockerfile
+```
+
+### Эндпоинты микросервисов
+
+**Users (порт 5100):**
+| Метод | Эндпоинт | Описание |
+|--------|----------|-------------|
+| POST | `/auth/register` | Регистрация пользователя |
+| POST | `/auth/login` | Вход, получение JWT |
+
+**Events (порт 5200):**
+| Метод | Эндпоинт | Описание | Авторизация |
+|--------|----------|-------------|-------------|
+| GET | `/events` | Список мероприятий | — |
+| GET | `/events/{id}` | Мероприятие по ID | — |
+| POST | `/events` | Создание | Admin |
+| PUT | `/events/{id}` | Обновление | Admin |
+| DELETE | `/events/{id}` | Удаление | Admin |
+
+**Bookings (порт 5300):**
+| Метод | Эндпоинт | Описание | Авторизация |
+|--------|----------|-------------|-------------|
+| POST | `/events/{id}/book` | Создание брони (202) | User/Admin |
+| GET | `/bookings/{id}` | Статус брони | User/Admin |
+| DELETE | `/bookings/{id}` | Отмена брони (204) | Владелец / Admin |
+
+### Проверка сценария
+
+```bash
+# 1. Регистрация + логин
+curl -X POST http://localhost:5100/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"login":"admin","password":"123456","role":"Admin"}'
+
+TOKEN=$(curl -s -X POST http://localhost:5100/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"login":"admin","password":"123456"}' | jq -r .token)
+
+# 2. Создание события (Admin)
+curl -X POST http://localhost:5200/events \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"Concert","startAt":"2025-12-01T19:00:00Z","endAt":"2025-12-01T22:00:00Z","totalSeats":100}'
+
+# 3. Бронирование
+curl -X POST http://localhost:5300/events/{EVENT_ID}/book \
+  -H "Authorization: Bearer $TOKEN"
+
+# 4. Подождать ~5 секунд (фоновое подтверждение) и проверить места
+curl http://localhost:5200/events/{EVENT_ID}
+# AvailableSeats должен уменьшиться на 1
+```
+
 ## Лицензия
 
 Этот проект создан в учебных целях в рамках спринт-задания.

@@ -1,14 +1,107 @@
 services:
-  postgres:
+  # --- Infrastructure ---
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.6.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+
+  users-db:
     image: postgres:16
     environment:
-      POSTGRES_DB: eventapi
+      POSTGRES_DB: users_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - users-data:/var/lib/postgresql/data
+
+  events-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: events_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5434:5432"
+    volumes:
+      - events-data:/var/lib/postgresql/data
+
+  bookings-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: bookings_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5435:5432"
+    volumes:
+      - bookings-data:/var/lib/postgresql/data
+
+  # --- Services ---
+  users-service:
+    build:
+      context: ./src
+      dockerfile: Users/Dockerfile
+    depends_on:
+      - users-db
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=users-db;Port=5432;Database=users_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "ThisIsASuperSecretKeyForJwtThatMustBeAtLeast32Chars!"
+      Jwt__Issuer: "EventApi"
+      Jwt__Audience: "EventApiClients"
+      Jwt__ExpiresInMinutes: "60"
+    ports:
+      - "5100:8080"
+
+  events-service:
+    build:
+      context: ./src
+      dockerfile: Events/Dockerfile
+    depends_on:
+      - events-db
+      - kafka
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=events-db;Port=5432;Database=events_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "ThisIsASuperSecretKeyForJwtThatMustBeAtLeast32Chars!"
+      Jwt__Issuer: "EventApi"
+      Jwt__Audience: "EventApiClients"
+      Kafka__BootstrapServers: "kafka:9092"
+      Kafka__ConsumerGroup: "events-service"
+    ports:
+      - "5200:8080"
+
+  bookings-service:
+    build:
+      context: ./src
+      dockerfile: Bookings/Dockerfile
+    depends_on:
+      - bookings-db
+      - kafka
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=bookings-db;Port=5432;Database=bookings_db;Username=postgres;Password=postgres"
+      Jwt__Secret: "ThisIsASuperSecretKeyForJwtThatMustBeAtLeast32Chars!"
+      Jwt__Issuer: "EventApi"
+      Jwt__Audience: "EventApiClients"
+      Kafka__BootstrapServers: "kafka:9092"
+    ports:
+      - "5300:8080"
 
 volumes:
-  postgres-data:
+  users-data:
+  events-data:
+  bookings-data:
