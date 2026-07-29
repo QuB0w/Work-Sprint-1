@@ -10,6 +10,7 @@
     <Project Path="Events/Events.Domain/Events.Domain.csproj" />
     <Project Path="Events/Events.Infrastructure/Events.Infrastructure.csproj" />
     <Project Path="Events/Events.Presentation/Events.Presentation.csproj" />
+    <Project Path="Events/Events.Tests/Events.Tests.csproj" />
   </Folder>
   <Folder Name="/Shared/">
     <Project Path="Shared/EventApi.Contracts/EventApi.Contracts.csproj" />

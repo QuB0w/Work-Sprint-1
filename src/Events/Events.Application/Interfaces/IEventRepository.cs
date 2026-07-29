@@ -9,4 +9,5 @@ public interface IEventRepository
     Task<Event> AddAsync(Event entity);
     Task UpdateAsync(Event entity);
     Task<bool> DeleteAsync(Guid id);
+    Task<List<Event>> GetTopPopularAsync(int count);
 }

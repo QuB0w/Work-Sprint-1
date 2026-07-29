@@ -45,4 +45,13 @@ public class EventRepository : IEventRepository
         await _context.SaveChangesAsync();
         return true;
     }
+
+    public async Task<List<Event>> GetTopPopularAsync(int count)
+    {
+        return await _context.Events
+            .AsNoTracking()
+            .OrderByDescending(e => (double)(e.TotalSeats - e.AvailableSeats) / e.TotalSeats)
+            .Take(count)
+            .ToListAsync();
+    }
 }

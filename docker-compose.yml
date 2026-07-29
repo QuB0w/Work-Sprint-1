@@ -52,6 +52,17 @@ services:
     volumes:
       - bookings-data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7.2-alpine
+    container_name: eventapi-redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
   # --- Services ---
   users-service:
     build:
@@ -75,6 +86,7 @@ services:
     depends_on:
       - events-db
       - kafka
+      - redis
     environment:
       ConnectionStrings__DefaultConnection: "Host=events-db;Port=5432;Database=events_db;Username=postgres;Password=postgres"
       Jwt__Secret: "ThisIsASuperSecretKeyForJwtThatMustBeAtLeast32Chars!"
@@ -82,6 +94,7 @@ services:
       Jwt__Audience: "EventApiClients"
       Kafka__BootstrapServers: "kafka:9092"
       Kafka__ConsumerGroup: "events-service"
+      Redis__ConnectionString: "redis:6379"
     ports:
       - "5200:8080"
 

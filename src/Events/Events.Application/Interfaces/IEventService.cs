@@ -9,4 +9,5 @@ public interface IEventService
     Task<List<EventDto>> GetAllAsync();
     Task<EventDto?> UpdateAsync(Guid id, UpdateEventRequest request);
     Task<bool> DeleteAsync(Guid id);
+    Task<List<EventDto>> GetTopPopularAsync();
 }

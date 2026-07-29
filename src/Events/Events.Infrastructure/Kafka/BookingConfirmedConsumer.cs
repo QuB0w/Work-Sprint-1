@@ -1,6 +1,7 @@
 using System.Text.Json;
 using Confluent.Kafka;
 using EventApi.Contracts;
+using Events.Application.Caching;
 using Events.Application.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -72,6 +73,7 @@ public class BookingConfirmedConsumer : BackgroundService
     {
         using var scope = _scopeFactory.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IEventRepository>();
+        var cache = scope.ServiceProvider.GetRequiredService<ICacheService>();
 
         var eventEntity = await repository.GetByIdAsync(message.EventId);
         if (eventEntity is null)
@@ -87,6 +89,7 @@ public class BookingConfirmedConsumer : BackgroundService
         }
 
         await repository.UpdateAsync(eventEntity);
+        await cache.RemoveAsync(CacheKeys.Event(message.EventId));
         _logger.LogInformation(
             "Decremented {Seats} seat(s) for Event {EventId}. Remaining: {Available}.",
             message.Seats, message.EventId, eventEntity.AvailableSeats);

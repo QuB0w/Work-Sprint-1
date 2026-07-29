@@ -667,6 +667,41 @@ src/
 | GET | `/bookings/{id}` | Статус брони | User/Admin |
 | DELETE | `/bookings/{id}` | Отмена брони (204) | Владелец / Admin |
 
+## Новые возможности в Sprint 10
+
+### ✅ Кеширование через Redis
+
+Сервис **Events** подключён к Redis (`StackExchange.Redis`). Соединение — тяжёлый потокобезопасный объект `IConnectionMultiplexer`, поэтому создаётся один раз и регистрируется в DI как singleton (`Events.Infrastructure.DependencyInjection`).
+
+**Слоистая абстракция:**
+- `ICacheService` определён в `Events.Application/Interfaces` — Application не зависит от StackExchange.Redis.
+- `RedisCacheService` (`Events.Infrastructure/Caching`) — реализация на Redis с минимальным набором операций: `GetAsync<T>`, `SetAsync<T>`, `RemoveAsync`.
+- Ключи кеша собраны в одном месте — `Events.Application.Caching.CacheKeys` (`event:{id}`, `events:top10`).
+- TTL вынесены в конфигурацию (`CacheOptions`, секция `Cache` в `appsettings.json`): `EventTtlSeconds` (300с) и `TopEventsTtlSeconds` (60с).
+
+**Что кешируется и почему:**
+| Сценарий | Ключ | TTL | Стратегия обновления |
+|----------|------|-----|----------------------|
+| `GET /events/{id}` | `event:{id}` | 300с | Инвалидация при записи |
+| `GET /events/top` (топ-10 по % проданных мест) | `events:top10` | 60с | Только по TTL |
+
+- **Событие по ID** читается по паттерну Cache-Aside: сначала проверяется Redis, при промахе — запрос в БД и запись в кеш с TTL. Для этого сценария выбрана **инвалидация при записи**: при `UpdateAsync`/`DeleteAsync` в `EventService`, а также при обработке Kafka-сообщения `BookingConfirmed` (`BookingConfirmedConsumer`, после уменьшения `AvailableSeats`) ключ `event:{id}` удаляется из кеша **после** успешного сохранения в БД. Следующее чтение прогревает кеш заново. Такой подход проще и надёжнее «обновления вместе с БД» — нет риска записать в кеш неконсистентные данные, если после сохранения в БД что-то пойдёт не так.
+- **Топ-10 самых популярных событий** — рейтинговый агрегат, который меняется нечасто, поэтому кеш живёт по TTL (60с) без явной инвалидации. Инвалидация на каждое бронирование была бы избыточной нагрузкой на Redis и БД.
+- Порядок операций всегда: **сначала запись в БД, потом изменение кеша**. Если процесс оборвётся между шагами — в БД останутся консистентные данные, а кеш просто обновится при следующем обращении.
+
+**Отказоустойчивость:** `RedisCacheService` оборачивает все обращения к Redis в `try/catch` и логирует ошибку через `ILogger`, не пробрасывая исключение — при недоступности Redis запрос просто идёт напрямую в базу данных, клиент не видит ошибки. `IConnectionMultiplexer` создаётся с `AbortOnConnectFail = false`, поэтому сервис успешно стартует даже если Redis недоступен на момент запуска.
+
+**Конфигурация** (`Events.Presentation/appsettings.json`):
+```json
+"Redis": { "ConnectionString": "localhost:6379" },
+"Cache": { "EventTtlSeconds": 300, "TopEventsTtlSeconds": 60 }
+```
+В Docker Compose строка подключения переопределяется переменной окружения `Redis__ConnectionString=redis:6379` (сервисы обращаются друг к другу по имени контейнера).
+
+**Docker Compose:** добавлен контейнер `redis` (`redis:7.2-alpine`) с healthcheck `redis-cli ping`; `events-service` зависит от `redis`.
+
+**Unit-тесты** (`src/Events/Events.Tests/EventServiceCachingTests.cs`, xUnit + Moq): попадание в кеш (репозиторий не вызывается), промах (данные из репозитория сохраняются в кеш с корректным TTL), инвалидация при `UpdateAsync`/`DeleteAsync`, отсутствие лишних обращений к кешу, если сущность не найдена.
+
 ### Проверка сценария
 
 ```bash
