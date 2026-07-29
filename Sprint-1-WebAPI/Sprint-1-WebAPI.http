@@ -1,6 +1,38 @@
 @Sprint_1_WebAPI_HostAddress = http://localhost:5153
+@EventId = 11111111-1111-1111-1111-111111111111
 
-GET {{Sprint_1_WebAPI_HostAddress}}/weatherforecast/
+GET {{Sprint_1_WebAPI_HostAddress}}/events
 Accept: application/json
 
 ###
+
+GET {{Sprint_1_WebAPI_HostAddress}}/events/{{EventId}}
+Accept: application/json
+
+###
+
+POST {{Sprint_1_WebAPI_HostAddress}}/events
+Content-Type: application/json
+
+{
+	"title": "Sprint Planning",
+	"description": "Plan tasks",
+	"startAt": "2026-04-20T10:00:00",
+	"endAt": "2026-04-20T11:00:00"
+}
+
+###
+
+PUT {{Sprint_1_WebAPI_HostAddress}}/events/{{EventId}}
+Content-Type: application/json
+
+{
+	"title": "Sprint Planning Updated",
+	"description": "Updated details",
+	"startAt": "2026-04-20T12:00:00",
+	"endAt": "2026-04-20T13:00:00"
+}
+
+###
+
+DELETE {{Sprint_1_WebAPI_HostAddress}}/events/{{EventId}}

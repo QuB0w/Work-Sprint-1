@@ -1,0 +1,23 @@
+<Solution>
+  <Folder Name="/Bookings/">
+    <Project Path="Bookings/Bookings.Application/Bookings.Application.csproj" />
+    <Project Path="Bookings/Bookings.Domain/Bookings.Domain.csproj" />
+    <Project Path="Bookings/Bookings.Infrastructure/Bookings.Infrastructure.csproj" />
+    <Project Path="Bookings/Bookings.Presentation/Bookings.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/Events/">
+    <Project Path="Events/Events.Application/Events.Application.csproj" />
+    <Project Path="Events/Events.Domain/Events.Domain.csproj" />
+    <Project Path="Events/Events.Infrastructure/Events.Infrastructure.csproj" />
+    <Project Path="Events/Events.Presentation/Events.Presentation.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="Shared/EventApi.Contracts/EventApi.Contracts.csproj" />
+  </Folder>
+  <Folder Name="/Users/">
+    <Project Path="Users/Users.Application/Users.Application.csproj" />
+    <Project Path="Users/Users.Domain/Users.Domain.csproj" />
+    <Project Path="Users/Users.Infrastructure/Users.Infrastructure.csproj" />
+    <Project Path="Users/Users.Presentation/Users.Presentation.csproj" />
+  </Folder>
+</Solution>

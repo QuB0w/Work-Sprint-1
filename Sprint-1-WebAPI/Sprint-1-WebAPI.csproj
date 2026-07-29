@@ -4,11 +4,17 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>Sprint_1_WebAPI</RootNamespace>
+    <RootNamespace>EventApi.Presentation</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.6" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\EventApi.Application\EventApi.Application.csproj" />
+    <ProjectReference Include="..\EventApi.Infrastructure\EventApi.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
