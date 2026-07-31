@@ -1,5 +1,6 @@
 using System.Text;
 using Events.Application;
+using Events.Application.Caching;
 using Events.Infrastructure;
 using Events.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -10,8 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddApplicationServices();
+builder.Services.Configure<CacheOptions>(builder.Configuration.GetSection("Cache"));
 builder.Services.AddInfrastructureServices(
-    builder.Configuration.GetConnectionString("DefaultConnection")!);
+    builder.Configuration.GetConnectionString("DefaultConnection")!,
+    builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379");
 
 var jwtSection = builder.Configuration.GetSection("Jwt");
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -23,6 +23,13 @@ public class EventController : ControllerBase
         return Ok(events);
     }
 
+    [HttpGet("top")]
+    public async Task<IActionResult> GetTop()
+    {
+        var events = await _eventService.GetTopPopularAsync();
+        return Ok(events);
+    }
+
     [HttpGet("{id:guid}")]
     public async Task<IActionResult> GetById(Guid id)
     {
