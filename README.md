@@ -729,6 +729,58 @@ curl http://localhost:5200/events/{EVENT_ID}
 # AvailableSeats должен уменьшиться на 1
 ```
 
+## Новые возможности в Sprint 11
+
+### ✅ Observability: трейсинг, метрики, структурированные логи
+
+Во все три сервиса (`Users`, `Events`, `Bookings`) добавлен **OpenTelemetry SDK**:
+
+- **Трейсы**: автоматическая инструментация входящих HTTP-запросов (`AddAspNetCoreInstrumentation`), исходящих HTTP-запросов (`AddHttpClientInstrumentation`) и запросов EF Core к БД (`AddEntityFrameworkCoreInstrumentation`). Экспорт по OTLP в **Jaeger**.
+- **Метрики**: инструментация ASP.NET Core (latency, throughput, error rate) и рантайма .NET (GC, ThreadPool) через `AddRuntimeInstrumentation`. Экспорт в формате Prometheus по эндпоинту `/metrics` (`AddPrometheusExporter` + `app.MapPrometheusScrapingEndpoint()`).
+- Каждый сервис зарегистрирован под своим именем ресурса (`users-service`, `events-service`, `bookings-service`) — по этому имени сервисы различаются в Jaeger и Prometheus (`job` label).
+- **Логи**: настроен **Serilog** с выводом в консоль в формате **CompactJsonFormatter** — каждая строка лога является полноценным JSON-объектом (уровень, таймстамп, источник, сообщение). Конфигурация уровня логирования — в секции `Serilog` в `appsettings.json`.
+
+**Конфигурация** (`appsettings.json` каждого сервиса):
+```json
+"Otlp": { "Endpoint": "http://localhost:4317" },
+"Serilog": {
+  "MinimumLevel": {
+    "Default": "Information",
+    "Override": { "Microsoft": "Warning", "System": "Warning" }
+  }
+}
+```
+В Docker Compose endpoint переопределяется переменной окружения `Otlp__Endpoint=http://jaeger:4317` (сервисы обращаются к Jaeger по имени контейнера).
+
+### Стек мониторинга (Docker Compose)
+
+| Сервис | UI / Порт | Назначение |
+|--------|-----------|------------|
+| **Prometheus** | http://localhost:9090 | Сбор и хранение метрик (scrape `/metrics` каждого сервиса каждые 15с, конфиг — `prometheus.yml`) |
+| **Jaeger** | http://localhost:16686 (UI), `4317` (OTLP gRPC) | Хранение и просмотр распределённых трейсов |
+| **Grafana** | http://localhost:3000 (логин/пароль: `admin`/`admin`) | Дашборды на основе метрик Prometheus |
+
+**Запуск стека:**
+```bash
+docker compose up --build
+```
+
+**Grafana настроена через provisioning** — datasource (`grafana/provisioning/datasources/prometheus.yml`) и дашборд (`grafana/provisioning/dashboards/dashboards.yml` + `grafana/dashboards/events-service-overview.json`) подключаются автоматически при старте контейнера, без ручной настройки через UI.
+
+**Дашборд `Events Service - Overview`** содержит панели:
+- Latency (p50 / p95 / p99) — `histogram_quantile` по `http_server_request_duration_seconds_bucket`
+- Throughput (RPS) — `rate(http_server_request_duration_seconds_count[5m])`
+- Error Rate (5xx) — доля запросов с `http_response_status_code=~"5.."`
+- Active Requests — `http_server_active_requests`
+- .NET GC Heap Size и ThreadPool Thread Count — метрики рантайма
+
+### Проверка
+
+1. `GET http://localhost:5200/metrics` (и 5100/5300) — возвращает метрики в формате Prometheus.
+2. Jaeger UI (`http://localhost:16686`) → выбрать сервис → должны быть видны трейсы со спанами HTTP и SQL (EF Core).
+3. Prometheus → **Status → Targets** — все три джобы (`users-service`, `events-service`, `bookings-service`) в статусе `UP`.
+4. Grafana → дашборд `Events Service - Overview` отображает данные (после нескольких запросов к API).
+
 ## Лицензия
 
 Этот проект создан в учебных целях в рамках спринт-задания.
